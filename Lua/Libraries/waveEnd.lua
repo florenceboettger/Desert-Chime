@@ -70,3 +70,12 @@ function GrazeUpdate()
         Encounter["tp"].grazeSprite.alpha = 0
     end
 end
+
+_EndingWave = EndingWave
+
+function EndingWave()
+    Encounter.Call("SetWavespeed", 1)
+    if _EndingWave then
+        _EndingWave()
+    end
+end

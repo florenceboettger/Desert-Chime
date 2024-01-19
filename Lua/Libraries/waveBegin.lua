@@ -36,7 +36,3 @@ end
 function WaveDeltaTime()
     return Time.dt * Encounter["wavespeed"]
 end
-
-function EndingWave()
-    Encounter.Call("SetWavespeed", 1)
-end
