@@ -1,0 +1,29 @@
+{    
+    "Lua.workspace.library": [
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/allScriptFunctions.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/encounterScriptFunctions.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/monsterScriptFunctions.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/waveScriptFunctions.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/spriteAndAnimationFunctions.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/projectileFunctions.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/arena.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/player.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/script.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/audio.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/spriteAndAnimation.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/projectile.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/input.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/text.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/time.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/misc.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/file.lua",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations/newAudio.lua"
+    ],
+    "Lua.workspace.ignoreDir": [
+        ".vscode",
+        "F:/Flo/Documents/CYF/CYF-VSCode-Declarations"
+    ],
+    "Lua.diagnostics.disable": [
+        "missing-parameter"
+    ]
+}
