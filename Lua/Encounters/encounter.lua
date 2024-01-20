@@ -43,6 +43,32 @@ end
 -- A custom list with attacks to choose from. Actual selection happens in EnemyDialogueEnding(). Put here in case you want to use it.
 possible_attacks = {"bullettest_bouncy", "bullettest_chaserorb", "bullettest_touhou"}
 
+local spellButtonAnimStart = -1
+local spellButtonAnimDuration = 0.5
+local spellButtonAnim, spellButtonShadow
+
+function ActivateSpellButton()
+    --UI.EnableButton("FIGHT")
+    UI.fightbtn.Set("SPELL")
+    UI.fightbtn.color = {1, 1, 1}
+    UI.SetButtonActiveSprite("FIGHT", "SPELL_active")
+    Audio.PlaySound("snd_undertale_flash")
+    spellButtonAnimStart = Time.time
+
+    spellButtonShadow = CreateSprite("SPELL", "BelowUI")
+    spellButtonShadow.MoveToAbs(
+        UI.fightbtn.absx + UI.fightbtn.width / 2,
+        UI.fightbtn.absy + UI.fightbtn.height / 2
+    )
+    spellButtonShadow.alpha = 0.5
+
+    spellButtonAnim = CreateSprite("SPELL", "BelowArena")
+    spellButtonAnim.MoveToAbs(
+        UI.fightbtn.absx + UI.fightbtn.width / 2,
+        UI.fightbtn.absy + UI.fightbtn.height / 2
+    )
+end
+
 function EncounterStarting()
     require "Animations/desert_chime_anim"
 
@@ -63,13 +89,44 @@ function EncounterStarting()
     shield = require "shield"
     tp = require "tp"
 
+    tp.grazeSpriteColor = {132, 132, 132}
+
     -- Testing
     shield.setShield(10)
     tp.setTP(100)
-    spells.activateSpellButton()
+    --ActivateSpellButton()
 end
 
 function Update()
+    if Input.GetKey("Mouse1") == 1 then
+        ActivateSpellButton()
+    end
+
+    if (spellButtonAnim and spellButtonAnim.isactive) or (spellButtonShadow and spellButtonShadow.isactive) then
+        local animTime = Time.time - spellButtonAnimStart
+        local scale = 1 + 0.15 * easeBezier.ease(.81, .56, .62, 1, math.sin(animTime / spellButtonAnimDuration * math.pi))
+        local angle = 0.7 * math.sin(animTime / spellButtonAnimDuration * math.pi * 2)
+        if animTime > spellButtonAnimDuration and spellButtonAnim.isactive then
+            spellButtonAnim.Remove()
+            UI.EnableButton("FIGHT")
+        elseif spellButtonAnim.isactive then
+            spellButtonAnim.xscale = scale
+            spellButtonAnim.yscale = scale
+            spellButtonAnim.rotation = angle
+        end
+
+        if spellButtonShadow.isactive then
+            local shadeScale = 1 + 0.5 * easeBezier.ease(.31, .67, .61, 1, animTime / (spellButtonAnimDuration * 2))
+            spellButtonShadow.xscale = shadeScale
+            spellButtonShadow.yscale = shadeScale
+            spellButtonShadow.rotation = angle * 0.5
+            spellButtonShadow.alpha = 1 - animTime / (spellButtonAnimDuration * 2)
+            if spellButtonShadow.alpha < 0 and spellButtonShadow.isactive then
+                spellButtonShadow.Remove()
+            end
+        end
+    end
+
     UpdateKeyframes()
     ApplyKeyframes()
     UpdateSplines()

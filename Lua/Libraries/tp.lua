@@ -7,6 +7,7 @@ self.tpLabel = nil
 self.tpText = nil
 
 self.grazeSprite = nil
+self.grazeSpriteColor = {164, 118, 118}
 self.grazeHitbox = nil
 
 function self.setTP(v, rel, lerp)
@@ -33,7 +34,7 @@ function self.setTP(v, rel, lerp)
     end
 end
 
-local label_bar_diff = UI.hpbar.background.absx - (UI.hplabel.absx + UI.hplabel.width)
+local labelBarDiff = UI.hpbar.background.absx - (UI.hplabel.absx + UI.hplabel.width)
 
 -- Setup TP Bar
 self.tpLabel = CreateSprite("TP", "BelowUI")
@@ -41,7 +42,7 @@ self.tpLabel.SetPivot(0, 0)
 -- Hardcoded from right side of screen
 self.tpLabel.MoveToAbs(472, UI.hplabel.absy)
 
-self.tpBar = CreateBar(self.tpLabel.absx + self.tpLabel.width + label_bar_diff, UI.hpbar.background.absy, self.maxTP / 2, UI.hpbar.background.yscale)
+self.tpBar = CreateBar(self.tpLabel.absx + self.tpLabel.width + labelBarDiff, UI.hpbar.background.absy, self.maxTP / 2, UI.hpbar.background.yscale)
 self.tpBar.background.color = {0.5, 0, 0}
 self.tpBar.fill.color = {1, 0.5, 0.15}
 

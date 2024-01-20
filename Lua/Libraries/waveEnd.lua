@@ -3,7 +3,9 @@ RotationalCollision = require "RotationalCollision"
 local lastGrazeFrame = 0
 local halfPlayerSize = Encounter["tp"].grazeHitbox.sprite.xscale / 2
 
---local tp = Encounter.GetVar("tp")
+local function mix(x, y, a)
+    return x * (1 - a) + y * a
+end
 
 _Update = Update
 
@@ -60,7 +62,12 @@ function GrazeUpdate()
     local frame = Time.frameCount - lastGrazeFrame
     if frame >= 6 and frame < 12 then
         local coeff = (frame - 5) / 6
-        Encounter["tp"].grazeSprite.color32 = { 255 - math.floor(91 * coeff), 255 - math.floor(137 * coeff), 255 - math.floor(137 * coeff) }
+        local target = Encounter["tp"].grazeSpriteColor
+        Encounter["tp"].grazeSprite.color32 = {
+            math.ceil(mix(255, target[1], coeff)),
+            math.ceil(mix(255, target[2], coeff)),
+            math.ceil(mix(255, target[3], coeff))
+        }
     elseif frame >= 12 and frame < 18 and bulletsGrazing == 0 then
         Encounter["tp"].grazeSprite.alpha = 1 - ((frame - 11) / 12)
     elseif frame >= 12 and bulletsGrazing > 0 then

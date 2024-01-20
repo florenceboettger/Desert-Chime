@@ -204,9 +204,9 @@ CreateState("SPELLSELECT")
 CreateState("ACTIONCOMMAND")
 
 local function updateSpellList()
-    local spells_text = "[instant]"
-    local spell_description = self.list[self.selected].description
-    spell_description[3] = ("(%d%%TP)"):format(self.list[self.selected].cost)
+    local spellsText = "[instant]"
+    local spellDescription = self.list[self.selected].description
+    spellDescription[3] = ("(%d%%TP)"):format(self.list[self.selected].cost)
     for i, spell in ipairs(self.list) do
         if spell.active then
             local color = "[color:ffffff]"
@@ -215,10 +215,10 @@ local function updateSpellList()
             elseif spell.cost > tp.tp then
                 color = "[color:666666]"
             end
-            spells_text = spells_text .. ("  %s* %s[color:ffffff]\t%s\n"):format(color, spell.name, spell_description[i])
+            spellsText = spellsText .. ("  %s* %s[color:ffffff]\t%s\n"):format(color, spell.name, spellDescription[i])
         end
     end
-    UI.maintext.SetText(spells_text)
+    UI.maintext.SetText(spellsText)
 end
 
 local function hoverSpell(i, rel)
@@ -250,13 +250,6 @@ local function setupActionCommand()
     UI.maintext.setText("")
     commandTime = Time.time
     self.list[self.selected]:init()
-end
-
-function self.activateSpellButton()
-    UI.EnableButton("FIGHT")
-    UI.fightbtn.Set("SPELL")
-    UI.fightbtn.color = {1, 1, 1}
-    UI.SetButtonActiveSprite("FIGHT", "SPELL_active")
 end
 
 ___Update = Update

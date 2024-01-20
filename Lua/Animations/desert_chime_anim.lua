@@ -86,43 +86,43 @@ InitialKeyframes = {
         y = 320
     },
     mask = {},
-    chime_l = {
+    chimeL = {
         x = -13,
         y = 14,
     },
-    chime_r = {
+    chimeR = {
         x = 7,
         y = 14,
         rotation = 90
     },
-    chime_mask_l = {
+    maskChimeL = {
         x = -12,
         y = -6,
         color = {1, 1, 1, 0}
     },
-    chime_mask_r = {
+    maskChimeR = {
         x = 8,
         y = -6,
         color = {1, 1, 1, 0}
     },
-    snake_head_l = {
+    snakeHeadL = {
         x = -24,
         y = -10,
         rotation = -60
     },
-    snake_head_r = {
+    snakeHeadR = {
         x = 24,
         y = -10,
         rotation = -60,
         xscale = -1
     },
-    snake_tail_l = {
+    snakeTailL = {
         x = -24,
         y = -12,
         xscale = -1,
         rotation = 22
     },
-    snake_tail_r = {
+    snakeTailR = {
         x = 27,
         y = -12,
         rotation = 22
@@ -131,7 +131,7 @@ InitialKeyframes = {
 
 InitialKeyframes.mask.x = InitialKeyframes.jar.x - 1
 InitialKeyframes.mask.y = InitialKeyframes.jar.y + 57
-local mask_goal = {InitialKeyframes.mask.x, InitialKeyframes.mask.y}
+local maskGoal = {InitialKeyframes.mask.x, InitialKeyframes.mask.y}
 
 Keyframes = {}
 
@@ -148,24 +148,24 @@ Sprites.mask = CreateSprite("mask", "mask")
 Sprites.jar = CreateSprite("jar", "jar")
 Sprites.jar.SetPivot(0.5, 0)
 
-local sprite_monster = enemies[1].GetVar("monstersprite")
-sprite_monster.color = {0, 0, 0, 0}
-sprite_monster.MoveToAbs(InitialKeyframes.jar.x, InitialKeyframes.jar.y)
+local monsterSprite = enemies[1].GetVar("monstersprite")
+monsterSprite.color = {0, 0, 0, 0}
+monsterSprite.MoveToAbs(InitialKeyframes.jar.x, InitialKeyframes.jar.y)
 
-for _, d in ipairs({"l", "r"}) do
-    Sprites["chime_" .. d] = CreateSprite("chime")
-    Sprites["chime_" .. d].SetParent(Sprites.jar)
+for _, d in ipairs({"L", "R"}) do
+    Sprites["chime" .. d] = CreateSprite("chime")
+    Sprites["chime" .. d].SetParent(Sprites.jar)
 
-    Sprites["chime_mask_" .. d] = CreateSprite("chime")
-    Sprites["chime_mask_" .. d].SetParent(Sprites.mask)
+    Sprites["maskChime" .. d] = CreateSprite("chime")
+    Sprites["maskChime" .. d].SetParent(Sprites.mask)
 
-    Sprites["snake_head_" .. d] = CreateSprite("snake_head")
-    Sprites["snake_head_" .. d].SetParent(Sprites.mask)
-    Sprites["snake_head_" .. d].SetPivot(0.5, 1)
+    Sprites["snakeHead" .. d] = CreateSprite("snake_head")
+    Sprites["snakeHead" .. d].SetParent(Sprites.mask)
+    Sprites["snakeHead" .. d].SetPivot(0.5, 1)
 
-    Sprites["snake_tail_" .. d] = CreateSprite("snake_tail")
-    Sprites["snake_tail_" .. d].SetParent(Sprites.jar)
-    Sprites["snake_tail_" .. d].SetPivot(0.5, 1)
+    Sprites["snakeTail" .. d] = CreateSprite("snake_tail")
+    Sprites["snakeTail" .. d].SetParent(Sprites.jar)
+    Sprites["snakeTail" .. d].SetPivot(0.5, 1)
 
     curves[d] = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
     curves[d].show(16, {1, 1, 1}, "snakes", 8, "snake_body", true)
@@ -210,8 +210,8 @@ end
 Keyframes = deepcopy(InitialKeyframes)
 
 local function alternateMoveRest(t, active, rest)
-    local mod_t = t % (2 * (active + rest))
-    return (math.max(0, math.min(active, active + 0.5 * rest - math.abs(active + 0.5 * rest - mod_t)))) / active, mod_t >= active + rest
+    local modT = t % (2 * (active + rest))
+    return (math.max(0, math.min(active, active + 0.5 * rest - math.abs(active + 0.5 * rest - modT)))) / active, modT >= active + rest
 end
 
 local function shiver(duration, periods, amplitude, t)
@@ -222,97 +222,97 @@ local function shiver(duration, periods, amplitude, t)
     return amplitude * (1 - easeBezier.ease(.25, .66, .59, 1, scaled_t)) * math.sin(2 * math.pi * scaled_t * periods)
 end
 
-local mask_move_curve = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
+local maskMoveCurve = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
 -- possible values: IDLE, ATTACKED, DEFENDING
 SetGlobal("AnimState", "IDLE")
 local attackIntensity = 0
-local prev_state = GetGlobal("AnimState")
-local default_state = prev_state
-local anim_start = Time.time
+local prevState = GetGlobal("AnimState")
+local defaultState = prevState
+local animStart = Time.time
 
-local attacked_duration = 1.5
+local attackedDuration = 1.5
 
-local function moveMaskIdle(anim_time)
+local function moveMaskIdle(animTime)
     if wavespeed < 1 then
-        anim_time = anim_time * wavespeed
+        animTime = animTime * wavespeed
         Keyframes.jar.x = InitialKeyframes.jar.x + math.random(-1, 1)
         Keyframes.jar.y = InitialKeyframes.jar.y + math.random(-1, 1)
         --Sprites.jar.MoveToAbs(Keyframes.jar.x, Keyframes.jar.y)
     end
-    local x, desc = alternateMoveRest(anim_time, 3, 4)
+    local x, desc = alternateMoveRest(animTime, 3, 4)
     if desc then x = 1 - x end
-    local mask_dist_t = easeBezier.ease(.47, .17, .42, 1.22, x)
-    if desc then mask_dist_t = 1 - mask_dist_t end
+    local maskDistT = easeBezier.ease(.47, .17, .42, 1.22, x)
+    if desc then maskDistT = 1 - maskDistT end
 
-    mask_goal = {Sprites.jar.absx - 1, Sprites.jar.absy + 57}
-    local mask_max_dist = 60
-    local mask_angle = math.rad(200)
-    local mask_displacement = {mask_goal[1] + math.sin(mask_angle) * mask_max_dist, mask_goal[2] + math.cos(mask_angle) * mask_max_dist}
+    maskGoal = {Sprites.jar.absx - 1, Sprites.jar.absy + 57}
+    local maskMaxDist = 60
+    local maskAngle = math.rad(200)
+    local maskDisplacement = {maskGoal[1] + math.sin(maskAngle) * maskMaxDist, maskGoal[2] + math.cos(maskAngle) * maskMaxDist}
 
-    mask_move_curve.movepoint(1, mask_goal[1], mask_goal[2])
-    mask_move_curve.movepoint(2, mask_goal[1] - 15, mask_goal[2] - 10)
-    mask_move_curve.movepoint(3, mask_displacement[1], mask_displacement[2])
-    mask_move_curve.movepoint(4, mask_displacement[1] + 10, mask_displacement[2] + 15)
+    maskMoveCurve.movepoint(1, maskGoal[1], maskGoal[2])
+    maskMoveCurve.movepoint(2, maskGoal[1] - 15, maskGoal[2] - 10)
+    maskMoveCurve.movepoint(3, maskDisplacement[1], maskDisplacement[2])
+    maskMoveCurve.movepoint(4, maskDisplacement[1] + 10, maskDisplacement[2] + 15)
 
-    local rotation_shiver = shiver(3, 6, 10 * mix(math.max(0, mask_dist_t), 1, 0.2), anim_time % 3)
+    local rotation_shiver = shiver(3, 6, 10 * mix(math.max(0, maskDistT), 1, 0.2), animTime % 3)
 
-    Keyframes.mask.x, Keyframes.mask.y = mask_move_curve.getpos(mask_dist_t)
+    Keyframes.mask.x, Keyframes.mask.y = maskMoveCurve.getpos(maskDistT)
     Keyframes.mask.rotation = InitialKeyframes.mask.rotation + rotation_shiver
 
-    Keyframes.snake_head_l.rotation = InitialKeyframes.snake_head_l.rotation - 60 * mask_dist_t + 5 * math.sin(anim_time)
-    Keyframes.snake_head_r.rotation = InitialKeyframes.snake_head_r.rotation - 60 * mask_dist_t + 5 * math.sin(anim_time + math.pi/2)
+    Keyframes.snakeHeadL.rotation = InitialKeyframes.snakeHeadL.rotation - 60 * maskDistT + 5 * math.sin(animTime)
+    Keyframes.snakeHeadR.rotation = InitialKeyframes.snakeHeadR.rotation - 60 * maskDistT + 5 * math.sin(animTime + math.pi/2)
 end
 
 local function animateBells(anim_time)
     local offsets = {
-        l = 0,
-        r = math.pi / 2,
-        mask_l = 0,
-        mask_r = math.pi / 2
+        chimeL = 0,
+        chimeR = math.pi / 2,
+        maskChimeL = 0,
+        maskChimeR = math.pi / 2
     }
-    for _, d in ipairs({"l", "r", "mask_l", "mask_r"}) do
-        Keyframes["chime_" .. d].rotation = InitialKeyframes["chime_" .. d].rotation + math.sin(anim_time + offsets[d]) * 30
+    for _, d in ipairs({"chimeL", "chimeR", "maskChimeL", "maskChimeR"}) do
+        Keyframes[d].rotation = InitialKeyframes[d].rotation + math.sin(anim_time + offsets[d]) * 30
     end
 end
 
 function Attacked(intensity)
     SetGlobal("AnimState", "ATTACKED")
     attackIntensity = intensity
-    anim_start = Time.time
+    animStart = Time.time
 end
 
 function UpdateKeyframes()
-    if GetGlobal("AnimState") ~= prev_state then
-        anim_start = Time.time
-        prev_state = GetGlobal("AnimState")
-        default_state = prev_state
+    if GetGlobal("AnimState") ~= prevState then
+        animStart = Time.time
+        prevState = GetGlobal("AnimState")
+        defaultState = prevState
     end
-    local anim_time = Time.time - anim_start
+    local animTime = Time.time - animStart
 
     if GetGlobal("AnimState") == "DEFENDING" then
-        Keyframes.mask.x = mask_goal[1]
-        Keyframes.mask.y = mask_goal[2]
+        Keyframes.mask.x = maskGoal[1]
+        Keyframes.mask.y = maskGoal[2]
         Keyframes.mask.rotation = InitialKeyframes.mask.rotation
 
-        Keyframes.snake_head_l.rotation = InitialKeyframes.snake_head_l.rotation
-        Keyframes.snake_head_r.rotation = InitialKeyframes.snake_head_r.rotation
+        Keyframes.snakeHeadL.rotation = InitialKeyframes.snakeHeadL.rotation
+        Keyframes.snakeHeadR.rotation = InitialKeyframes.snakeHeadR.rotation
     else
         if GetGlobal("AnimState") == "IDLE" then
-            moveMaskIdle(anim_time)
+            moveMaskIdle(animTime)
         elseif GetGlobal("AnimState") == "ATTACKED" then
-            local movement_shiver = shiver(1, 4, attackIntensity, anim_time)
-            Keyframes.mask.x = mask_goal[1] + movement_shiver
-            Keyframes.mask.y = mask_goal[2]
+            local movementShiver = shiver(1, 4, attackIntensity, animTime)
+            Keyframes.mask.x = maskGoal[1] + movementShiver
+            Keyframes.mask.y = maskGoal[2]
 
-            local rotation_shiver = shiver(2, 5, 6, anim_time)
+            local rotationShiver = shiver(2, 5, 6, animTime)
 
-            Keyframes.mask.rotation = InitialKeyframes.mask.rotation + rotation_shiver
+            Keyframes.mask.rotation = InitialKeyframes.mask.rotation + rotationShiver
 
-            Keyframes.snake_head_l.rotation = InitialKeyframes.snake_head_l.rotation
-            Keyframes.snake_head_r.rotation = InitialKeyframes.snake_head_r.rotation
+            Keyframes.snakeHeadL.rotation = InitialKeyframes.snakeHeadL.rotation
+            Keyframes.snakeHeadR.rotation = InitialKeyframes.snakeHeadR.rotation
 
-            if anim_time >= attacked_duration then
-                SetGlobal("AnimState", default_state)
+            if animTime >= attackedDuration then
+                SetGlobal("AnimState", defaultState)
             end
         end
     end
@@ -350,37 +350,37 @@ function ApplyKeyframes()
 end
 
 function UpdateSplines()
-    for _, d in ipairs({"l", "r"}) do
+    for _, d in ipairs({"L", "R"}) do
         local pos = {}
-        local pos1_start = {Sprites["snake_tail_" .. d].absx, Sprites["snake_tail_" .. d].absy}
-        local pos1_rotation = Sprites["snake_tail_" .. d].rotation * sign(Sprites["snake_tail_" .. d].xscale) * sign(Sprites["snake_tail_" .. d].yscale)
-        local pos1_offset = Sprites["snake_tail_" .. d].height
+        local pos1Start = {Sprites["snakeTail" .. d].absx, Sprites["snakeTail" .. d].absy}
+        local pos1Rotation = Sprites["snakeTail" .. d].rotation * sign(Sprites["snakeTail" .. d].xscale) * sign(Sprites["snakeTail" .. d].yscale)
+        local pos1Offset = Sprites["snakeTail" .. d].height
 
         pos[1] = {
-            pos1_start[1] + math.sin(math.rad(pos1_rotation)) * pos1_offset,
-            pos1_start[2] - math.cos(math.rad(pos1_rotation)) * pos1_offset
+            pos1Start[1] + math.sin(math.rad(pos1Rotation)) * pos1Offset,
+            pos1Start[2] - math.cos(math.rad(pos1Rotation)) * pos1Offset
         }
 
-        local start_offset = 15
+        local startOffset = 15
 
         pos[2] = {
-            pos[1][1] + math.sin(math.rad(pos1_rotation)) * start_offset,
-            pos[1][2] - math.cos(math.rad(pos1_rotation)) * start_offset
+            pos[1][1] + math.sin(math.rad(pos1Rotation)) * startOffset,
+            pos[1][2] - math.cos(math.rad(pos1Rotation)) * startOffset
         }
 
-        local pos3_start = {Sprites["snake_head_" .. d].absx, Sprites["snake_head_" .. d].absy}
-        local pos3_rotation = Sprites["snake_head_" .. d].rotation * sign(Sprites["snake_head_" .. d].xscale) * sign(Sprites["snake_head_" .. d].yscale)
-        local pos3_offset = Sprites["snake_head_" .. d].height
+        local pos3Start = {Sprites["snakeHead" .. d].absx, Sprites["snakeHead" .. d].absy}
+        local pos3Rotation = Sprites["snakeHead" .. d].rotation * sign(Sprites["snakeHead" .. d].xscale) * sign(Sprites["snakeHead" .. d].yscale)
+        local pos3Offset = Sprites["snakeHead" .. d].height
         pos[3] = {
-            pos3_start[1] + math.sin(math.rad(pos3_rotation)) * pos3_offset,
-            pos3_start[2] - math.cos(math.rad(pos3_rotation)) * pos3_offset
+            pos3Start[1] + math.sin(math.rad(pos3Rotation)) * pos3Offset,
+            pos3Start[2] - math.cos(math.rad(pos3Rotation)) * pos3Offset
         }
 
-        local end_offset = 15
+        local endOffset = 15
 
         pos[4] = {
-            pos[3][1] + math.sin(math.rad(pos3_rotation)) * end_offset,
-            pos[3][2] - math.cos(math.rad(pos3_rotation)) * end_offset
+            pos[3][1] + math.sin(math.rad(pos3Rotation)) * endOffset,
+            pos[3][2] - math.cos(math.rad(pos3Rotation)) * endOffset
         }
 
         for j = 1, 4 do

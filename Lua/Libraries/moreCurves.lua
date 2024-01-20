@@ -36,3 +36,5 @@ function self.circle(x, y, r)
 
     return curve
 end
+
+return self

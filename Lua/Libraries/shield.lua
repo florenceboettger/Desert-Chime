@@ -53,7 +53,7 @@ function self.spawnShards(x, y, color)
     end
 end
 
-function self.playerHurt(damage, invul_time, ignoreDef, playSound)
+function self.playerHurt(damage, invulTime, ignoreDef, playSound)
     if playSound == nil then
         playSound = true
     end
@@ -62,11 +62,11 @@ function self.playerHurt(damage, invul_time, ignoreDef, playSound)
         return
     end
     if self.shieldHP == 0 then
-        Player.Hurt(damage, invul_time, ignoreDef, playSound)
+        Player.Hurt(damage, invulTime, ignoreDef, playSound)
         return
     end
     self.setShield(self.shieldHP - damage)
-    Player.Hurt(0, invul_time, ignoreDef, false)
+    Player.Hurt(0, invulTime, ignoreDef, false)
 
     if playSound then
         PlaySoundOnceThisFrame("snd_mirrorbreak1")
@@ -96,11 +96,11 @@ self.setShield(0)
 _Update = Update
 
 function Update()
-    local shield_elapsed_time = Time.time - activationTime
-    local shine = -0.5 * math.cos(shield_elapsed_time * 2 * math.pi / 2) + 0.5
+    local shieldElapsedTime = Time.time - activationTime
+    local shine = -0.5 * math.cos(shieldElapsedTime * 2 * math.pi / 2) + 0.5
     shine = easeBezier.ease(1, .27, .77, 1, shine)
-    local player_shine = shine * 0.7
-    shieldColorAnim = {Mix(1, self.shieldColor[1], player_shine), Mix(1, self.shieldColor[2], player_shine), Mix(1, self.shieldColor[3], player_shine)}
+    local playerShine = shine * 0.7
+    shieldColorAnim = {Mix(1, self.shieldColor[1], playerShine), Mix(1, self.shieldColor[2], playerShine), Mix(1, self.shieldColor[3], playerShine)}
 
     if self.shieldHP > 0 then
         Player.sprite.color = shieldColorAnim
