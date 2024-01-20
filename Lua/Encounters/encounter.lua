@@ -67,6 +67,8 @@ function ActivateSpellButton()
         UI.fightbtn.absx + UI.fightbtn.width / 2,
         UI.fightbtn.absy + UI.fightbtn.height / 2
     )
+
+    tp.Activate()
 end
 
 function EncounterStarting()
@@ -77,6 +79,9 @@ function EncounterStarting()
     UI.fightbtn.Set("FIGHT_inactive")
     UI.fightbtn.color = {0.4, 0.4, 0.4}
     UI.DisableButton("FIGHT")
+    
+    UI.hpbar.background.color = {0.4, 0.4, 0.4}
+    UI.hpbar.fill.color = {1, 1, 1}
 
     -- Setup Player
     Player.maxhp = 5
@@ -85,20 +90,29 @@ function EncounterStarting()
     Player.sprite.Set("monster_soul")
     Player.sprite.color = {1, 1, 1}
 
+    --[[if not pcall(Player.sprite.shader.Set, "shear", "Shear") then
+        DEBUG("uh oh")
+    end]]
+
     spells = require "spells"
     shield = require "shield"
     tp = require "tp"
 
+    tp.Deactivate()
     tp.grazeSpriteColor = {132, 132, 132}
 
     -- Testing
     shield.setShield(10)
+    ActivateSpellButton()
     tp.setTP(100)
-    --ActivateSpellButton()
 end
 
 function Update()
-    if Input.GetKey("Mouse1") == 1 then
+    --[[if Player.sprite.shader.isactive then
+    
+        Player.sprite.shader.SetVector("yOffset", {10 * math.sin(Time.time * 2 * math.pi), 0, 0, 0})
+    end]]
+        if Input.GetKey("Mouse1") == 1 and not spellButtonAnimStart > 0 then
         ActivateSpellButton()
     end
 

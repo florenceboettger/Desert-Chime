@@ -11,7 +11,9 @@ _Update = Update
 
 function Update()
     if _Update then _Update() end
-    GrazeUpdate()
+    if Encounter["tp"].active then
+        GrazeUpdate()
+    end
 end
 
 function GrazeUpdate()

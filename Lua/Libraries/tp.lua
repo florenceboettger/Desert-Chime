@@ -34,7 +34,22 @@ function self.setTP(v, rel, lerp)
     end
 end
 
+function self.Activate()
+    self.active = true
+end
+
+function self.Deactivate()
+    self.active = false
+    self.tpBar.background.alpha = 0
+    self.tpBar.fill.alpha = 0
+    self.tpText.alpha = 0
+    self.tpLabel.alpha = 0
+    self.tp = 0
+end
+
 local labelBarDiff = UI.hpbar.background.absx - (UI.hplabel.absx + UI.hplabel.width)
+
+self.active = true
 
 -- Setup TP Bar
 self.tpLabel = CreateSprite("TP", "BelowUI")
@@ -67,6 +82,23 @@ self.grazeHitbox = { sprite = self.grazeHitbox }
 
 self.setTP(0)
 
+__Update = Update
+
+function Update()
+    if self.active and self.tpLabel.alpha < 1 then
+        local alpha = math.min(1, self.tpLabel.alpha + 4 * Time.dt)
+        self.tpBar.background.alpha = alpha
+        self.tpBar.fill.alpha = alpha
+        self.tpText.alpha = alpha
+        self.tpLabel.alpha = alpha
+        -- necessary to reset the color for MAX
+        self.setTP(self.tp)
+    end
+    if __Update then
+        __Update()
+    end
+end
+
 __EnteringState = EnteringState
 
 function EnteringState(newstate, oldstate)
@@ -74,7 +106,9 @@ function EnteringState(newstate, oldstate)
         self.grazeSprite.alpha = 0
     end
 
-    __EnteringState(newstate, oldstate)
+    if __EnteringState then
+        __EnteringState(newstate, oldstate)
+    end
 end
 
 return self

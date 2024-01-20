@@ -72,24 +72,31 @@ function self.playerHurt(damage, invulTime, ignoreDef, playSound)
         PlaySoundOnceThisFrame("snd_mirrorbreak1")
     end
 
-    self.spawnShards(Player.absx, Player.absy, shieldColorAnim)
+    --self.spawnShards(Player.absx, Player.absy, shieldColorAnim)
+    self.spawnShards(Player.absx, Player.absy, self.shieldColor)
 
     if expandSpr then
         expandSpr.Remove()
     end
     expandSpr = CreateSprite("monster_soul", "BelowPlayer")
-    expandSpr.SetParent(Player.sprite)
+    --expandSpr.SetParent(Player.sprite)
+    expandSpr.SendToBottom()
     expandSpr.alpha = 1
-    expandSpr.MoveTo(0, 0)
+    expandSpr.MoveToAbs(Player.sprite.absx, Player.sprite.absy)
 end
 
 -- Setup Shield Bar
-UI.hpbar.background.color = {0.4, 0.4, 0.4}
-UI.hpbar.fill.color = {1, 1, 1}
 self.bar = CreateBar(UI.hpbar.background.absx + UI.hpbar.background.xscale, UI.hpbar.background.absy, self.maxShield, UI.hpbar.background.yscale)
 self.bar.background.color = {0, 0, 0, 0}
 self.bar.fill.color = self.shieldColor
 self.hpOffset = UI.hptext.absx - (UI.hpbar.background.absx + UI.hpbar.background.xscale)
+
+local pulseSprite = CreateSprite("monster_soul", "BelowPlayer")
+pulseSprite.MoveToAbs(Player.sprite.absx, Player.sprite.absy)
+pulseSprite.color = self.shieldColor
+pulseSprite.alpha = 0
+--pulseSprite.xscale = 1.1
+--pulseSprite.yscale = 1.1
 
 self.setShield(0)
 
@@ -102,11 +109,21 @@ function Update()
     local playerShine = shine * 0.7
     shieldColorAnim = {Mix(1, self.shieldColor[1], playerShine), Mix(1, self.shieldColor[2], playerShine), Mix(1, self.shieldColor[3], playerShine)}
 
-    if self.shieldHP > 0 then
-        Player.sprite.color = shieldColorAnim
-        --ShieldBar.fill.color = ShieldColorAnim
+    if self.shieldHP > 0 and Player.sprite.isactive then
+        pulseSprite.MoveToAbs(Player.sprite.absx, Player.sprite.absy)
+        local pulseLoopTime = (shieldElapsedTime / 1) % 1.3
+        if pulseLoopTime > 1 then
+            pulseSprite.alpha = 0
+            
+        else            
+            local scale = 1 + 0.3 * easeBezier.ease(.31, .67, .61, 1, pulseLoopTime)
+
+            pulseSprite.xscale = scale
+            pulseSprite.yscale = scale
+            pulseSprite.alpha = Player.sprite.alpha * Mix(0.9, 0, easeBezier.ease(.86, .12, .86, .92, pulseLoopTime))
+        end
     else
-        Player.sprite.color = {1, 1, 1}
+        pulseSprite.alpha = 0
     end
 
     for i = 1, 4 do
@@ -126,6 +143,7 @@ function Update()
     end
 
     if expandSpr and expandSpr.isactive then
+        expandSpr.MoveToAbs(Player.sprite.absx, Player.sprite.absy)
         expandSpr.xscale = expandSpr.xscale + 0.1 * Time.dt * 30
         expandSpr.yscale = expandSpr.yscale + 0.1 * Time.dt * 30
         expandSpr.alpha = expandSpr.alpha - 0.05 * Time.dt * 30
@@ -152,7 +170,11 @@ function EnteringState(newstate, oldstate)
             end
         end
     end
-    
+
+    if oldstate == "ACTMENU" and newstate == "DIALOGRESULT" then
+        Player.sprite.MoveToAbs(-100, -100)
+    end
+
     _EnteringState(newstate, oldstate)
 end
 
