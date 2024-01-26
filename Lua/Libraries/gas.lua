@@ -2,7 +2,7 @@
 
 Grow a Spline v1.1a
 - 9thCore
-- draw width and easeBezier by underFlorence
+- draw width, draw sprite and show by underFlorence
 
 A library which calculates stuff to make Bézier curves and splines.
 

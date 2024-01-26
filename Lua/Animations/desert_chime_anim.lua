@@ -2,6 +2,8 @@ local gas = require 'gas'
 local easeBezier = require 'easeBezier'
 local moreCurves = require "moreCurves"
 
+DesertChimeAnim = true
+
 local function sign(number)
     if number > 0 then
        return 1

@@ -1,5 +1,7 @@
 easeBezier = require "easeBezier"
+parseDialogue = require "parseDialogue"
 require "ScriptOwnerBypass"
+require "Animations/sir_slither_anim"
 
 -- music = "shine_on_you_crazy_diamond" --Either OGG or WAV. Extension is added automatically. Uncomment for custom music.
 encountertext = "The sand swirls around you." --Modify as necessary. It will only be read out in the action select screen.
@@ -7,16 +9,22 @@ nextwaves = {"bullettest_touhou"}
 wavetimerOrig = 4.0
 wavetimer = 4.0
 wavespeed = 1.0
-arenasize = {155, 130}
+arenasize = {565, 130}
+
+autolinebreak = true
 
 noscalerotationbug = true
+playerskipdocommand = true
 
 enemies = {
-    "desert_chime"
+    --"desert_chime"
+    "sir_slither_esq",
+    "sir_slither_esq_esq"
 }
 
 enemypositions = {
-    {0, 0}
+    {-210, 10},
+    {210, 10}
 }
 
 function PlaySoundOnceThisFrame(sound)
@@ -72,7 +80,25 @@ function ActivateSpellButton()
 end
 
 function EncounterStarting()
-    require "Animations/desert_chime_anim"
+    --require "Animations/desert_chime_anim"
+    SetupSlitherAnimation("sir_slither_esq", 1)
+    SetupSlitherAnimation("sir_slither_esq_esq", 2)
+
+    --[[enemies[1]["currentdialogue"] = {
+        "I'm Sir Slither,[w:3] Esq.!",
+        "And we're the Slither divorcees."
+    }
+    enemies[2]["currentdialogue"] = {
+        "And I'm Sir Slither,[w:3] Esq.,[w:3] Esq.!",
+        "And we're the Slither divorcees."
+    }
+    State("ENEMYDIALOGUE")]]
+    parseDialogue.loadDialogue(require "Dialogue/testing", true, Arena.y - 70)
+
+    --Arena.Hide()
+    --Arena.MoveTo(Arena.x, Arena.y - 70, false, true)
+    --Player.sprite.MoveTo(-100, -100)
+    UI.Hide(true)
 
     -- Setup Fight Command
     UI.background.Set("empty")
@@ -102,9 +128,9 @@ function EncounterStarting()
     tp.grazeSpriteColor = {132, 132, 132}
 
     -- Testing
-    shield.setShield(10)
-    ActivateSpellButton()
-    tp.setTP(100)
+    --shield.setShield(10)
+    --ActivateSpellButton()
+    --tp.setTP(100)
 end
 
 function Update()
@@ -141,12 +167,16 @@ function Update()
         end
     end
 
-    UpdateKeyframes()
-    ApplyKeyframes()
-    UpdateSplines()
+    AnimateSlithers()
+    if DesertChimeAnim then
+        UpdateKeyframes()
+        ApplyKeyframes()
+        UpdateSplines()
+    end
 end
 
 function EnteringState(newstate, oldstate)
+    parseDialogue.enteringState(newstate, oldstate)
 end
 
 function EnemyDialogueStarting()
