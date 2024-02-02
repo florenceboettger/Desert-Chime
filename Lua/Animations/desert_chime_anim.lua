@@ -87,8 +87,7 @@ InitialKeyframes = {
         xscale = 2,
         yscale = 2
     },
-    bodyClone = {
-    },
+    bodyClone = {},
     jar = {
         x = 0,
         y = 0,
@@ -98,6 +97,14 @@ InitialKeyframes = {
     tail = {
         x = 0,
         y = 0,
+        xscale = 2,
+        yscale = 2
+    },
+    tailL = {
+        xscale = 2,
+        yscale = 2
+    },
+    tailR = {
         xscale = 2,
         yscale = 2
     },
@@ -179,12 +186,28 @@ Sprites.body.alpha = 0
 InitialKeyframes.body.x = Sprites.body.x
 InitialKeyframes.body.y = Sprites.body.y
 
-Sprites.tail = CreateSprite("desert_chime_tail")
+Sprites.tail = CreateSprite("desert_chime_tail_4")
 Sprites.tail.SetParent(Sprites.body)
 Sprites.tail.Scale(2, 2)
-Sprites.tail.SetPivot(12 / 24, 23 / 26)
+Sprites.tail.SetPivot(12 / 24, 17 / 19)
 Sprites.tail.SetAnchor(27 / 53, 4 / 57)
 Sprites.tail.MoveTo(0, 0)
+
+Sprites.tailL = CreateSprite("desert_chime_tail_l")
+Sprites.tailL.SetParent(Sprites.tail)
+Sprites.tailL.Scale(2, 2)
+Sprites.tailL.SetPivot(1, 6 / 7)
+Sprites.tailL.SetAnchor(13 / 26, 2 / 19)
+Sprites.tailL.MoveTo(0, 0)
+
+Sprites.tailR = CreateSprite("desert_chime_tail_r")
+Sprites.tailR.SetParent(Sprites.tail)
+Sprites.tailR.Scale(2, 2)
+Sprites.tailR.SetPivot(0, 6 / 7)
+Sprites.tailR.SetAnchor(13 / 26, 2 / 19)
+Sprites.tailR.MoveTo(0, 0)
+
+local bottomPos = Sprites.tailR.absy - Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
 
 Sprites.bodyClone = CreateSprite("desert_chime_body")
 Sprites.bodyClone.SetParent(Sprites.body)
@@ -315,9 +338,6 @@ local function moveMaskIdle(animTime)
         animTime = animTime * wavespeed
         Keyframes.body.x = Keyframes.body.x + math.random(-1, 1)
         Keyframes.body.y = Keyframes.body.y + math.random(-1, 1)
-        --Keyframes.jar.x = InitialKeyframes.jar.x + math.random(-1, 1)
-        --Keyframes.jar.y = InitialKeyframes.jar.y + math.random(-1, 1)
-        --Sprites.jar.MoveToAbs(Keyframes.jar.x, Keyframes.jar.y)
     end
     local x, desc = alternateMoveRest(animTime, 3, 4)
     if desc then x = 1 - x end
@@ -366,7 +386,7 @@ local function animateTail(animTime)
 
     Keyframes.tail.rotation = InitialKeyframes.tail.rotation + 6 * sinEsqueWave(.2, .15, 0.5, animTime)
 
-    if animTime % (0.5) >= 0.5/2 - 0.03 and animTime % (0.5) < 0.5/2 - 0.03 + Time.dt * wavespeed then
+    if animTime % (0.5) >= 0.5/2 - 0.03 and animTime % (0.5) < 0.5/2 - 0.03 + Time.dt * wavespeed * 1.51 then
         local direction = sign(triangleWave(animTime, 0.5))
         local dust = dustAnim[sign(direction)]
         dust.alpha = 1
@@ -383,7 +403,7 @@ local function animateTail(animTime)
             x = Sprites.tail.absx + math.sin(math.rad(Keyframes.tail.rotation)) * Sprites.tail.width * Keyframes.tail.xscale * Sprites.tail.xpivot,
             y = Sprites.tail.absy - math.cos(math.rad(Keyframes.tail.rotation)) * Sprites.tail.height * Keyframes.tail.yscale * Sprites.tail.ypivot
         }
-        dust.MoveToAbs(tailBottom.x + sign(direction) * 28, tailBottom.y)
+        dust.MoveToAbs(tailBottom.x + sign(direction) * 28, bottomPos + 2)
     end
 end
 
@@ -465,6 +485,10 @@ function ApplyKeyframes()
         if kf.alpha then
             spr.alpha = easeDynamic(spr.alpha, kf.alpha, .2)
         end
+    end
+
+    for _, d in ipairs({"L", "R"}) do
+        Sprites["tail" .. d].absy = bottomPos + Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
     end
 end
 

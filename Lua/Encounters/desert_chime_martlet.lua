@@ -19,7 +19,7 @@ enemies = {
 }
 
 enemypositions = {
-    {0, 50}
+    {0, 46}
 }
 
 function SetWavetimer(t)

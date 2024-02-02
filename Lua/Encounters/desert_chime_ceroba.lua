@@ -89,7 +89,7 @@ function EncounterStarting()
     SetupSlitherAnimation("sir_slither_esq_esq", 2)
     require "Animations/bowll_anim"
 
-    parseDialogue.loadDialogue(require "Dialogue/testing", false)
+    parseDialogue.loadDialogue(require "Dialogue/testing", true)
 
     -- Setup Fight Command
     UI.background.Set("empty")
