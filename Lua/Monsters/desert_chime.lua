@@ -3,7 +3,7 @@ comments = {"Smells like the work\rof an enemy stand.", "Poseur is posing like h
 commands = {"Act 1", "Act 2", "Act 3"}
 randomdialogue = {"Random\nDialogue\n1.", "Random\nDialogue\n2.", "Random\nDialogue\n3."}
 
-sprite = "jar" --Always PNG. Extension is added automatically.
+sprite = "desert_chime_body" --Always PNG. Extension is added automatically.
 name = "Desert Chime"
 hp = 100
 atk = 1
@@ -12,6 +12,7 @@ check = "..."
 dialogbubble = "right" -- See documentation for what bubbles you have available.
 canspare = false
 cancheck = true
+filename = "desert_chime"
 
 speed = 1
 

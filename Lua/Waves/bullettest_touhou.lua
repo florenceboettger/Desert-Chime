@@ -8,7 +8,7 @@ mult = 0.5
 lastTime = 0.49
 
 function OnHit(bullet)
-    SuperCall(Encounter, "shield.playerHurt", 3)
+    PlayerHurt(3)
 end
 
 function Update()

@@ -28,6 +28,14 @@ end
 
 local startTime = Time.time
 
+function PlayerHurt(damage, invul_time, ignoreDef, playSound)
+    if Encounter["shield"] then        
+        SuperCall(Encounter, "shield.playerHurt", damage, invul_time, ignoreDef, playSound)
+    else
+        Player.Hurt(damage, invul_time ,ignoreDef, playSound)
+    end
+end
+
 function WaveTime()
     local diffTime = Time.time - startTime
     return diffTime * Encounter["wavespeed"]

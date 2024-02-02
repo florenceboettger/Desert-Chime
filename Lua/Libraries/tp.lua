@@ -61,7 +61,8 @@ self.tpBar = CreateBar(self.tpLabel.absx + self.tpLabel.width + labelBarDiff, UI
 self.tpBar.background.color = {0.5, 0, 0}
 self.tpBar.fill.color = {1, 0.5, 0.15}
 
-self.tpText = CreateText("[font:uibattlesmall][instant]00%", {self.tpBar.background.absx + self.tpBar.background.xscale + shield.hpOffset, UI.hptext.absy}, 999, "BelowUI")
+self.hpOffset = UI.hptext.absx - (UI.hpbar.background.absx + UI.hpbar.background.xscale)
+self.tpText = CreateText("[font:uibattlesmall][instant]00%", {self.tpBar.background.absx + self.tpBar.background.xscale + self.hpOffset, UI.hptext.absy}, 999, "BelowUI")
 self.tpText.HideBubble()
 self.tpText.color = {1, 1, 1}
 self.tpText.progressmode = "none"
@@ -85,14 +86,17 @@ self.setTP(0)
 __Update = Update
 
 function Update()
-    if self.active and self.tpLabel.alpha < 1 then
-        local alpha = math.min(1, self.tpLabel.alpha + 4 * Time.dt)
-        self.tpBar.background.alpha = alpha
-        self.tpBar.fill.alpha = alpha
-        self.tpText.alpha = alpha
-        self.tpLabel.alpha = alpha
-        -- necessary to reset the color for MAX
-        self.setTP(self.tp)
+    if self.active then
+        if self.tpLabel.alpha < 1 then
+            local alpha = math.min(1, self.tpLabel.alpha + 4 * Time.dt)
+            self.tpBar.background.alpha = alpha
+            self.tpBar.fill.alpha = alpha
+            self.tpText.alpha = alpha
+            self.tpLabel.alpha = alpha
+            -- necessary to reset the color for MAX
+            self.setTP(self.tp)
+        end
+        self.grazeSprite.rotation = Player.sprite.rotation
     end
     if __Update then
         __Update()

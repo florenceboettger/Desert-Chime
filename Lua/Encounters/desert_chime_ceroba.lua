@@ -14,17 +14,19 @@ arenasize = {565, 130}
 autolinebreak = true
 
 noscalerotationbug = true
-playerskipdocommand = true
+--playerskipdocommand = true
 
 enemies = {
     --"desert_chime"
     "sir_slither_esq",
-    "sir_slither_esq_esq"
+    "sir_slither_esq_esq",
+    "bowll"
 }
 
 enemypositions = {
     {-210, 10},
-    {210, 10}
+    {210, 10},
+    {0, 50}
 }
 
 function PlaySoundOnceThisFrame(sound)
@@ -55,6 +57,8 @@ local spellButtonAnimStart = -1
 local spellButtonAnimDuration = 0.5
 local spellButtonAnim, spellButtonShadow
 
+local textboxSprite
+
 function ActivateSpellButton()
     --UI.EnableButton("FIGHT")
     UI.fightbtn.Set("SPELL")
@@ -83,22 +87,9 @@ function EncounterStarting()
     --require "Animations/desert_chime_anim"
     SetupSlitherAnimation("sir_slither_esq", 1)
     SetupSlitherAnimation("sir_slither_esq_esq", 2)
+    require "Animations/bowll_anim"
 
-    --[[enemies[1]["currentdialogue"] = {
-        "I'm Sir Slither,[w:3] Esq.!",
-        "And we're the Slither divorcees."
-    }
-    enemies[2]["currentdialogue"] = {
-        "And I'm Sir Slither,[w:3] Esq.,[w:3] Esq.!",
-        "And we're the Slither divorcees."
-    }
-    State("ENEMYDIALOGUE")]]
-    parseDialogue.loadDialogue(require "Dialogue/testing", true, Arena.y - 70)
-
-    --Arena.Hide()
-    --Arena.MoveTo(Arena.x, Arena.y - 70, false, true)
-    --Player.sprite.MoveTo(-100, -100)
-    UI.Hide(true)
+    parseDialogue.loadDialogue(require "Dialogue/testing", false)
 
     -- Setup Fight Command
     UI.background.Set("empty")
@@ -138,7 +129,7 @@ function Update()
     
         Player.sprite.shader.SetVector("yOffset", {10 * math.sin(Time.time * 2 * math.pi), 0, 0, 0})
     end]]
-        if Input.GetKey("Mouse1") == 1 and not spellButtonAnimStart > 0 then
+    if Input.GetKey("Mouse1") == 1 and spellButtonAnimStart < 0 then
         ActivateSpellButton()
     end
 
@@ -168,6 +159,7 @@ function Update()
     end
 
     AnimateSlithers()
+    BowllUpdate()
     if DesertChimeAnim then
         UpdateKeyframes()
         ApplyKeyframes()

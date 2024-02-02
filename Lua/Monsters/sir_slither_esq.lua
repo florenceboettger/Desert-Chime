@@ -12,7 +12,7 @@ check = "..."
 dialogbubble = "right" -- See documentation for what bubbles you have available.
 canspare = false
 cancheck = true
-name ="sir_slither_esq"
+filename = "sir_slither_esq"
 
 dialogbubble = "top"
 SetBubbleOffset(-10, 110)

@@ -1,9 +1,9 @@
-local slithers = {}
+Slithers = {}
 
 function SetupSlitherAnimation(name, hats)
     local monster
     for _, scr in ipairs(enemies) do
-        if scr["name"] == name then
+        if scr["filename"] == name then
             monster = scr
         end
     end
@@ -66,7 +66,7 @@ function SetupSlitherAnimation(name, hats)
         sprites.hats[i] = hat
     end
 
-    slithers[name] = sprites
+    Slithers[name] = sprites
 end
 
 function AnimateSlithers()
@@ -74,7 +74,7 @@ function AnimateSlithers()
     local c = 0
 
     local maxHats = 0
-    for _, slither in pairs(slithers) do
+    for _, slither in pairs(Slithers) do
         maxHats = math.max(maxHats, #slither.hats)
     end
 
@@ -85,7 +85,7 @@ function AnimateSlithers()
         hatAnims[i].rotation = 8 * ((1 - modTimeOffset) ^ 0.5) * math.sin((modTimeOffset ^ 1.7) * 2 * math.pi)
     end
 
-    for _, slither in pairs(slithers) do
+    for _, slither in pairs(Slithers) do
         local modTimeOffset = (modTime + c * 0.5) % 1
     
         local xNeck = -2.2 * (modTimeOffset ^ 0.65) * math.sin((modTimeOffset ^ 0.5) * 2 * math.pi)
