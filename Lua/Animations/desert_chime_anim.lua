@@ -530,6 +530,20 @@ local sandEmitData = {
         parent = Sprites.body,
         anchor = {x = 12.5 / 53, y = 5 / 57},
         pile = true,
+    },
+    armR = {
+        parent = Sprites.armThingR,
+        anchor = {x = 10.5 / 17, y = 7 / 19},
+        pile = false,
+        vanishHeight = 15,
+        vanishDistance = 15,
+    },
+    armL = {
+        parent = Sprites.armThingL,
+        anchor = {x = 10.5 / 17, y = 7 / 19},
+        pile = false,
+        vanishHeight = 15,
+        vanishDistance = 15,
     }
 }
 
@@ -545,6 +559,17 @@ local function generateSand(v)
     spr.SetParent(v.parent)
     spr.MoveTo(0, sandHeight)
     table.insert(v.sands, spr)
+
+    if v.vanishHeight then
+        pcall(spr.shader.Set, "fadeout", "FadeOut")
+        --spr.shader.Test("FadeOut")
+        if spr.shader.isActive then
+            spr.shader.SetFloat("height0", spr.absy - sandHeight)
+            spr.shader.SetFloat("height1", spr.absy)
+            spr.shader.SetFloat("cutoffHeight", v.vanishHeight + bottomPos)
+            spr.shader.SetFloat("cutoffDistance", v.vanishDistance)
+        end
+    end
 
     local coverSprite = CreateSprite("px")
     coverSprite.color = {0, 0, 0}
@@ -600,6 +625,10 @@ local function animateSand(animTime)
                 if spr.alpha > 0 then
                     spr.Move(0, -sandSpeed * Time.dt * wavespeed)
                     spr.absx = 2 * math.floor(spr.absx / 2 + 0.5)
+                    if spr.shader.isActive then
+                        spr.shader.SetFloat("height0", spr.absy - sandHeight)
+                        spr.shader.SetFloat("height1", spr.absy)
+                    end
                     if spr.absy < bottomPos then
                         spr.Remove()
                         table.remove(v.sands, i)
