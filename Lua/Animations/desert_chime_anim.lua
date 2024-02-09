@@ -533,17 +533,24 @@ local sandEmitData = {
     },
     armR = {
         parent = Sprites.armThingR,
-        anchor = {x = 10.5 / 17, y = 7 / 19},
+        anchor = {x = 9.5 / 17, y = 3 / 19},
         pile = false,
         vanishHeight = 15,
         vanishDistance = 15,
     },
     armL = {
         parent = Sprites.armThingL,
-        anchor = {x = 10.5 / 17, y = 7 / 19},
+        anchor = {x = 9.5 / 17, y = 3 / 19},
         pile = false,
         vanishHeight = 15,
         vanishDistance = 15,
+    },
+    jar = {
+        parent = Sprites.jar,
+        anchor = {x = 29.5 / 36, y = 10 / 36},
+        pile = false,
+        vanishHeight = 140,
+        vanishDistance = 10,
     }
 }
 
