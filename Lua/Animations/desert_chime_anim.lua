@@ -88,6 +88,46 @@ InitialKeyframes = {
         yscale = 2
     },
     bodyClone = {},
+    armR = {
+        xscale = 2,
+        yscale = 2
+    },
+    armThingR = {
+        xscale = 2,
+        yscale = 2
+    },
+    armThingRClone = {
+        xscale = 2,
+        yscale = 2
+    },
+    clawOuterR = {
+        xscale = 2,
+        yscale = 2
+    },
+    clawInnerR = {
+        xscale = 2,
+        yscale = 2
+    },
+    armL = {
+        xscale = -2,
+        yscale = 2
+    },
+    armThingL = {
+        xscale = -2,
+        yscale = 2
+    },
+    armThingLClone = {
+        xscale = -2,
+        yscale = 2
+    },
+    clawOuterL = {
+        xscale = -2,
+        yscale = 2
+    },
+    clawInnerL = {
+        xscale = -2,
+        yscale = 2
+    },
     jar = {
         x = 0,
         y = 0,
@@ -181,7 +221,7 @@ CreateLayer("mask", "snakes")
 
 Sprites.body = enemies[1]["monstersprite"]
 Sprites.body.Scale(2, 2)
-Sprites.body.setPivot(26 / 53, 4 / 57)
+Sprites.body.SetPivot(26 / 53, 4 / 57)
 Sprites.body.alpha = 0
 InitialKeyframes.body.x = Sprites.body.x
 InitialKeyframes.body.y = Sprites.body.y
@@ -215,6 +255,52 @@ Sprites.bodyClone.Scale(2, 2)
 Sprites.bodyClone.SetPivot(26 / 53, 4 / 57)
 Sprites.bodyClone.SetAnchor(26 / 53, 4 / 57)
 Sprites.bodyClone.MoveTo(0, 0)
+
+for _, d in ipairs({"L", "R"}) do
+    local xscale = 2
+    if d == "L" then
+        xscale = -2
+    end
+
+    Sprites["arm" .. d] = CreateSprite("desert_chime_arm")
+    Sprites["arm" .. d].SetParent(Sprites.body)
+    Sprites["arm" .. d].Scale(xscale, 2)
+    Sprites["arm" .. d].SetPivot(1 / 23, 27 / 31)
+    Sprites["arm" .. d].SetAnchor(47 / 53, 31 / 57)
+    Sprites["arm" .. d].MoveTo(0, 0)
+
+    Sprites["armThing" .. d] = CreateSprite("desert_chime_arm_thing")
+    Sprites["armThing" .. d].SetParent(Sprites["arm" .. d])
+    Sprites["armThing" .. d].Scale(xscale, 2)
+    Sprites["armThing" .. d].SetPivot(8 / 17, 9 / 19)
+    Sprites["armThing" .. d].SetAnchor(17 / 23, 7 / 31)
+    Sprites["armThing" .. d].MoveTo(0, 0)
+
+    Sprites["clawOuter" .. d] = CreateSprite("desert_chime_claw_outer")
+    Sprites["clawOuter" .. d].SetParent(Sprites["armThing" .. d])
+    Sprites["clawOuter" .. d].Scale(xscale, 2)
+    Sprites["clawOuter" .. d].SetPivot(1 / 13, 4 / 14)
+    Sprites["clawOuter" .. d].SetAnchor(16 / 17, 13 / 19)
+    Sprites["clawOuter" .. d].MoveTo(0, 0)
+
+    Sprites["clawInner" .. d] = CreateSprite("desert_chime_claw_inner")
+    Sprites["clawInner" .. d].SetParent(Sprites["armThing" .. d])
+    Sprites["clawInner" .. d].Scale(xscale, 2)
+    Sprites["clawInner" .. d].SetPivot(5 / 14, 2 / 15)
+    Sprites["clawInner" .. d].SetAnchor(8 / 17, 18 / 19)
+    Sprites["clawInner" .. d].MoveTo(0, 0)
+
+    Sprites["armThing" .. d .. "Clone"] = CreateSprite("desert_chime_arm_thing")
+    Sprites["armThing" .. d .. "Clone"].SetParent(Sprites["armThing" .. d])
+    Sprites["armThing" .. d .. "Clone"].Scale(xscale, 2)
+    Sprites["armThing" .. d .. "Clone"].SetPivot(8 / 17, 10 / 19)
+    Sprites["armThing" .. d .. "Clone"].SetAnchor(8 / 17, 10 / 19)
+    Sprites["armThing" .. d .. "Clone"].MoveTo(0, 0)
+end
+
+
+Sprites.armL.SetAnchor(9 / 53, 31 / 57)
+Sprites.armL.SendToBottom()
 
 Sprites.mask = CreateSprite("desert_chime_mask", "mask")
 
@@ -354,7 +440,7 @@ local function moveMaskIdle(animTime)
     maskMoveCurve.movepoint(3, maskDisplacement[1], maskDisplacement[2])
     maskMoveCurve.movepoint(4, maskDisplacement[1] + 10, maskDisplacement[2] + 15)
 
-    local rotationShiver = shiver(3, 6, 10 * mix(math.max(0, maskDistT), 1, 0.2), animTime % 3)
+    local rotationShiver = shiver(3, 4, 10 * mix(math.max(0, maskDistT), 1, 0.2), animTime % 3)
 
     Keyframes.mask.x, Keyframes.mask.y = maskMoveCurve.getpos(maskDistT)
     Keyframes.mask.rotation = InitialKeyframes.mask.rotation + rotationShiver
@@ -375,19 +461,20 @@ local function animateBells(animTime)
     end
 end
 
-local function animateTail(animTime)
-    Keyframes.body.x = InitialKeyframes.body.x - 4 * sinEsqueWave(.3, .21, 1.2, animTime)
+local function animateBody(animTime)
+    Keyframes.body.x = InitialKeyframes.body.x - 4 * sinEsqueWave(.3, .21, 2.5, animTime)
     local yOffset = -2 + 2 * sinEsqueWave(.15, .5, 2.0, animTime)
     Keyframes.body.y = InitialKeyframes.body.y + yOffset
     Keyframes.body.rotation = InitialKeyframes.body.rotation - 0.7 * Keyframes.body.x
 
-    Keyframes.tail.x = InitialKeyframes.tail.x - 3 * sinEsqueWave(.15, .2, 1.0, animTime)
+    Keyframes.tail.x = InitialKeyframes.tail.x - 3 * sinEsqueWave(.15, .2, 2.0, animTime)
     Keyframes.tail.y = InitialKeyframes.tail.y - yOffset
 
-    Keyframes.tail.rotation = InitialKeyframes.tail.rotation + 6 * sinEsqueWave(.2, .15, 0.5, animTime)
+    local tailRotPeriod = 1.0
+    Keyframes.tail.rotation = InitialKeyframes.tail.rotation + 12 * sinEsqueWave(.2, .5, tailRotPeriod, animTime)
 
-    if animTime % (0.5) >= 0.5/2 - 0.03 and animTime % (0.5) < 0.5/2 - 0.03 + Time.dt * wavespeed * 1.51 then
-        local direction = sign(triangleWave(animTime, 0.5))
+    if animTime % tailRotPeriod >= tailRotPeriod/2 * 0.75 and animTime % tailRotPeriod < tailRotPeriod/2 * 0.75 + Time.dt * wavespeed * 1.5 then
+        local direction = sign(triangleWave(animTime, tailRotPeriod))
         local dust = dustAnim[sign(direction)]
         dust.alpha = 1
         dust.SetAnimation({
@@ -396,14 +483,155 @@ local function animateTail(animTime)
             "desert_chime_dust_2",
             "desert_chime_dust_3",
             "desert_chime_dust_4",
-        }, 0.09)
+        }, 0.125)
         dust.loopmode = "ONESHOTEMPTY"
 
         local tailBottom = {
             x = Sprites.tail.absx + math.sin(math.rad(Keyframes.tail.rotation)) * Sprites.tail.width * Keyframes.tail.xscale * Sprites.tail.xpivot,
             y = Sprites.tail.absy - math.cos(math.rad(Keyframes.tail.rotation)) * Sprites.tail.height * Keyframes.tail.yscale * Sprites.tail.ypivot
         }
-        dust.MoveToAbs(tailBottom.x + sign(direction) * 28, bottomPos + 2)
+        dust.MoveToAbs(tailBottom.x + sign(direction) * 26, bottomPos)
+    end
+end
+
+local function animateArms(animTime)
+    local armRotation = sinEsqueWave(.15, .45, 4, animTime)
+    Keyframes.armL.rotation = InitialKeyframes.armL.rotation + 15 * armRotation
+    Keyframes.armR.rotation = InitialKeyframes.armR.rotation + 15 * armRotation
+
+    local armYScale = sinEsqueWave(.35, .5, 2, animTime)
+    Keyframes.armL.yscale = InitialKeyframes.armL.yscale * (1 + 0.2 * armYScale)
+    Keyframes.armR.yscale = InitialKeyframes.armR.yscale * (1 + 0.2 * armYScale)
+
+    local x, desc = alternateMoveRest(animTime, 0.75, 4)
+    if desc then x = 1 - x end
+    local pinchAngle = easeBezier.ease(.8, .4, .5, 1.75, x)
+    if desc then pinchAngle = 1 - pinchAngle end
+
+    pinchAngle = pinchAngle * 16
+
+    local armThingRotation = 10 * sinEsqueWave(.4, .4, 3, animTime)
+    for _, d in ipairs({"L", "R"}) do
+        Keyframes["armThing" .. d].rotation = InitialKeyframes["armThing" .. d].rotation + armThingRotation
+        Keyframes["clawOuter" .. d].rotation = InitialKeyframes["clawOuter" .. d].rotation + armThingRotation + pinchAngle
+        Keyframes["clawInner" .. d].rotation = InitialKeyframes["clawInner" .. d].rotation + armThingRotation - pinchAngle
+    end
+end
+
+local sandSpeed = 40
+local sandHeight = 16
+local sandEmitData = {
+    bodyR = {
+        parent = Sprites.body,
+        anchor = {x = 40.5 / 53, y = 5 / 57},
+        pile = true,
+    },
+    bodyL = {
+        parent = Sprites.body,
+        anchor = {x = 12.5 / 53, y = 5 / 57},
+        pile = true,
+    }
+}
+
+CreateLayer("SandFalls", "BelowArena", true)
+CreateLayer("SandPiles", "SandFalls", false)
+CreateLayer("SandPilesBG", "SandFalls", true)
+
+local function generateSand(v)
+    local spr = CreateSprite("sand_fg")
+    spr.Scale(2, sandHeight)
+    spr.SetPivot(0.5, 1)
+    spr.SetAnchor(v.anchor.x, v.anchor.y)
+    spr.SetParent(v.parent)
+    spr.MoveTo(0, sandHeight)
+    table.insert(v.sands, spr)
+
+    local coverSprite = CreateSprite("px")
+    coverSprite.color = {0, 0, 0}
+    coverSprite.Scale(2, 2)
+    coverSprite.SetPivot(0.5, 1)
+    local anchorY = math.random(1, (sandHeight / 2)) / (sandHeight / 2)
+    coverSprite.SetAnchor(0.5, anchorY)
+    coverSprite.SetParent(spr)
+    coverSprite.MoveTo(0, 0)
+    spr["cover"] = coverSprite
+
+    return spr
+end
+
+for _, v in pairs(sandEmitData) do
+    v.sands = {}
+    local spr = generateSand(v)
+    spr.layer = "SandFalls"
+
+    if v.pile then
+        local pileSprite = CreateSprite("sand_pile_0")
+        pileSprite.SetAnimation({
+            "sand_pile_0",
+            "sand_pile_1",
+            "sand_pile_2",
+            "sand_pile_3",
+            "sand_pile_4",
+            "sand_pile_5",
+            "sand_pile_6",
+        }, 4 / sandSpeed)
+        pileSprite.Scale(2, 2)
+        pileSprite.SetPivot(0.5, 0)
+        pileSprite.SetAnchor(v.anchor.x, v.anchor.y)
+        pileSprite.SetParent(v.parent)
+        pileSprite.MoveTo(0, 0)
+        pileSprite.layer = "SandPiles"
+        pileSprite.absy = bottomPos
+
+        local pileSpriteBG = CreateSprite("sand_pile_bg")
+        pileSpriteBG.Scale(2, 2)
+        pileSpriteBG.SetPivot(0.5, 0)
+        pileSpriteBG.layer = "SandPilesBG"
+        pileSpriteBG.MoveToAbs(pileSprite.absx, pileSprite.absy)
+    end
+end
+
+local function animateSand(animTime)
+
+    for _, v in pairs(sandEmitData) do
+        for i = #v.sands, 1, -1 do
+            local spr = v.sands[i]
+            if spr.isactive then
+                if spr.alpha > 0 then
+                    spr.Move(0, -sandSpeed * Time.dt * wavespeed)
+                    spr.absx = 2 * math.floor(spr.absx / 2 + 0.5)
+                    if spr.absy < bottomPos then
+                        spr.Remove()
+                        table.remove(v.sands, i)
+                    elseif spr.absy < bottomPos + 2 + sandHeight then
+                        spr.yscale = spr.absy - (bottomPos + 2)
+                    end
+                end
+            else
+                table.remove(v.sands, i)
+            end
+        end
+
+        local createSand = false
+        if #v.sands <= 1 then
+            createSand = true
+        else
+            local topSand = v.sands[#v.sands - 1]
+            local newSand = v.sands[#v.sands]
+
+            if newSand.absy - topSand.absy > topSand.height * topSand.yscale then
+                newSand.layer = "SandFalls"
+                newSand.alpha = 1
+                newSand["cover"].alpha = 1
+                newSand.absy = topSand.absy + topSand.height * topSand.yscale
+                createSand = true
+            end
+        end
+        if createSand then
+            local spr = generateSand(v)
+            spr.alpha = 0
+            spr["cover"].alpha = 0
+        end
     end
 end
 
@@ -415,7 +643,9 @@ end
 
 function UpdateKeyframes()
     animateBells(ElapsedTime())
-    animateTail(ElapsedTime())
+    animateBody(ElapsedTime())
+    animateArms(ElapsedTime())
+    animateSand(ElapsedTime())
 
     if GetGlobal("AnimState") ~= prevState then
         animStart = Time.time
@@ -456,6 +686,8 @@ end
 function ApplyKeyframes()
     for _, attr in ipairs({"xscale", "yscale", "rotation"}) do
         Keyframes.bodyClone[attr] = Keyframes.body[attr]
+        Keyframes.armThingLClone[attr] = Keyframes.armThingL[attr]
+        Keyframes.armThingRClone[attr] = Keyframes.armThingR[attr]
     end
     for name, spr in pairs(Sprites) do
         local kf = Keyframes[name]
