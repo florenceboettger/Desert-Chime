@@ -14,26 +14,6 @@ local function sign(number)
     end
 end
 
--- from https://easings.net/#easeInOutBack
-local function easeInOutBack(x)
-    local c1 = 1.70158
-    local c2 = c1 * 1.525
-
-    if x < 0.5 then
-        return (((2 * x) ^ 2) * ((c2 + 1) * 2 * x - c2)) / 2
-    else
-        return (((2 * x - 2) ^ 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2
-    end
-end
-
-local function easeInOutCubic(x)
-    if x < 0.5 then
-        return 4 * x * x * x
-    else
-        return 1 - ((-2 * x + 2) ^ 3) / 2
-    end
-end
-
 local function mix(x, y, a)
     return x * (1 - a) + y * a
 end
@@ -219,7 +199,10 @@ CreateLayer("jar", "BelowBullet")
 CreateLayer("snakes", "jar")
 CreateLayer("mask", "snakes")
 
+DesertChimeSprite = CreateSprite("empty")
+
 Sprites.body = enemies[1]["monstersprite"]
+Sprites.body.SetParent(DesertChimeSprite)
 Sprites.body.Scale(2, 2)
 Sprites.body.SetPivot(26 / 53, 4 / 57)
 Sprites.body.alpha = 0
@@ -554,6 +537,11 @@ local sandEmitData = {
     }
 }
 
+local sandSprites = CreateSprite("empty")
+sandSprites.MoveTo(0, 0)
+sandSprites.SetParent(DesertChimeSprite)
+sandSprites.SendToBottom()
+
 CreateLayer("SandFalls", "BelowArena", true)
 CreateLayer("SandPiles", "SandFalls", false)
 CreateLayer("SandPilesBG", "SandFalls", true)
@@ -599,13 +587,12 @@ for _, v in pairs(sandEmitData) do
     if v.pile then
         local pileSprite = CreateSprite("sand_pile_0")
         pileSprite.SetAnimation({
-            "sand_pile_0",
-            "sand_pile_1",
-            "sand_pile_2",
-            "sand_pile_3",
-            "sand_pile_4",
-            "sand_pile_5",
-            "sand_pile_6",
+            "sand_pile_new_0",
+            "sand_pile_new_1",
+            "sand_pile_new_2",
+            "sand_pile_new_3",
+            "sand_pile_new_4",
+            "sand_pile_new_5",
         }, 4 / sandSpeed)
         pileSprite.Scale(2, 2)
         pileSprite.SetPivot(0.5, 0)
@@ -614,12 +601,26 @@ for _, v in pairs(sandEmitData) do
         pileSprite.MoveTo(0, 0)
         pileSprite.layer = "SandPiles"
         pileSprite.absy = bottomPos
+        pileSprite.SetParent(sandSprites)
+        pileSprite.SendToBottom()
+        v.pileSprite = pileSprite
 
-        local pileSpriteBG = CreateSprite("sand_pile_bg")
+        local pileSpriteBG = CreateSprite("sand_pile_bg_new_0")
+        pileSpriteBG.SetAnimation({
+            "sand_pile_bg_new_0",
+            "sand_pile_bg_new_1",
+            "sand_pile_bg_new_2",
+            "sand_pile_bg_new_3",
+            "sand_pile_bg_new_4",
+            "sand_pile_bg_new_5",
+        }, 4 / sandSpeed)
         pileSpriteBG.Scale(2, 2)
         pileSpriteBG.SetPivot(0.5, 0)
         pileSpriteBG.layer = "SandPilesBG"
         pileSpriteBG.MoveToAbs(pileSprite.absx, pileSprite.absy)
+        pileSpriteBG.SetParent(sandSprites)
+        pileSpriteBG.SendToBottom()
+        v.pileSpriteBG = pileSpriteBG
     end
 end
 
@@ -657,6 +658,7 @@ local function animateSand(animTime)
 
             if newSand.absy - topSand.absy > topSand.height * topSand.yscale then
                 newSand.layer = "SandFalls"
+                newSand.SetParent(sandSprites)
                 newSand.alpha = 1
                 newSand["cover"].alpha = 1
                 newSand.absy = topSand.absy + topSand.height * topSand.yscale
@@ -667,6 +669,8 @@ local function animateSand(animTime)
             local spr = generateSand(v)
             spr.alpha = 0
             spr["cover"].alpha = 0
+
+            if v.pileSprite then v.pileSprite.SendToTop() end
         end
     end
 end
@@ -678,6 +682,8 @@ function Attacked(intensity)
 end
 
 function UpdateKeyframes()
+    DesertChimeSprite.Move(10 * Time.dt, 10 * Time.dt)
+
     animateBells(ElapsedTime())
     animateBody(ElapsedTime())
     animateArms(ElapsedTime())
@@ -756,7 +762,7 @@ function ApplyKeyframes()
     end
 
     for _, d in ipairs({"L", "R"}) do
-        Sprites["tail" .. d].absy = bottomPos + Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
+        Sprites["tail" .. d].absy = DesertChimeSprite.absy + bottomPos + Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
     end
 end
 
