@@ -154,7 +154,13 @@ local function magic(t, p1, p2, p3, p4)
 end
 
 local function createline(layer, width, color, sprite, top)
-	local spr = CreateSprite(sprite, layer)
+	local spr 
+	if type(layer) == type('') then
+		spr = CreateSprite(sprite, layer)
+	elseif type(layer) == "userdata" then
+		spr = CreateSprite(sprite)
+		spr.SetParent(layer)
+	end
 	if not top then spr.SendToBottom() end
 	spr.SetPivot(0,0.5)
 	spr.yscale = width / spr.height
@@ -230,7 +236,7 @@ function self.genericcurve(func)
 	function curve.show(segments, color, layer, width, sprite, top)
 		if type(segments) ~= type(1) and type(segments) ~= type(nil) then error(argIdxWrongTypeError:format(1, type(1), type(segments), 2)) end
 		if type(color) ~= type({}) and type(color) ~= type(nil) then error(argIdxWrongTypeError:format(2, type({}), type(color), 2)) end
-		if type(layer) ~= type('') and type(layer) ~= type(nil) then error(argIdxWrongTypeError:format(3, type(''), type(layer), 2)) end
+		if type(layer) ~= type('') and type(layer) ~= "userdata" and type(layer) ~= type(nil) then error(argIdxWrongTypeError:format(3, type(''), type(layer), 2)) end
 		if type(width) ~= type(1) and type(width) ~= type(nil) then error(argIdxWrongTypeError:format(4, type(1), type(width), 2)) end
 		if type(sprite) ~= type('') and type(sprite) ~= type(nil) then error(argIdxWrongTypeError:format(5, type(''), type(sprite), 2)) end
 		if type(top) ~= type(true) and type(top) ~= type(nil) then error(argIdxWrongTypeError:format(6, type(true), type(top), 2)) end

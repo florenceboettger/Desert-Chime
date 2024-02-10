@@ -129,6 +129,8 @@ InitialKeyframes = {
         yscale = 2
     },
     mask = {
+        x = 0,
+        y = 0,
         xscale = 2,
         yscale = 2
     },
@@ -195,10 +197,6 @@ Sprites = {}
 
 local curves = {}
 
-CreateLayer("jar", "BelowBullet")
-CreateLayer("snakes", "jar")
-CreateLayer("mask", "snakes")
-
 DesertChimeSprite = CreateSprite("empty")
 
 Sprites.body = enemies[1]["monstersprite"]
@@ -230,7 +228,7 @@ Sprites.tailR.SetPivot(0, 6 / 7)
 Sprites.tailR.SetAnchor(13 / 26, 2 / 19)
 Sprites.tailR.MoveTo(0, 0)
 
-local bottomPos = Sprites.tailR.absy - Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
+local bottomPos = Sprites.tailR.absy - Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale - DesertChimeSprite.y
 
 Sprites.bodyClone = CreateSprite("desert_chime_body")
 Sprites.bodyClone.SetParent(Sprites.body)
@@ -285,22 +283,22 @@ end
 Sprites.armL.SetAnchor(9 / 53, 31 / 57)
 Sprites.armL.SendToBottom()
 
-Sprites.mask = CreateSprite("desert_chime_mask", "mask")
-
-Sprites.jar = CreateSprite("desert_chime_jar", "jar")
+Sprites.jar = CreateSprite("desert_chime_jar")
 Sprites.jar.SetPivot(0.5, 0)
 Sprites.jar.SetParent(Sprites.body)
 Sprites.jar.SetAnchor(27 / 53, 52 / 57)
 Sprites.jar.MoveTo(0, 0)
 
-
-InitialKeyframes.mask.x = Sprites.jar.absx - 1
-InitialKeyframes.mask.y = Sprites.jar.absy + 57
-local maskGoal = {InitialKeyframes.mask.x, InitialKeyframes.mask.y}
+Sprites.mask = CreateSprite("desert_chime_mask")
+Sprites.mask.SetParent(Sprites.jar)
+Sprites.mask.SetPivot(0.5, 0.5)
+Sprites.mask.SetAnchor(17.5 / 36, 28.5 / 37)
+Sprites.mask.MoveTo(0, 0)
 
 for _, d in ipairs({"L", "R"}) do
     Sprites["chime" .. d] = CreateSprite("desert_chime_chime")
     Sprites["chime" .. d].SetParent(Sprites.jar)
+    Sprites["chime" .. d].SendToBottom()
 
     Sprites["maskChime" .. d] = CreateSprite("desert_chime_chime")
     Sprites["maskChime" .. d].SetParent(Sprites.mask)
@@ -314,8 +312,10 @@ for _, d in ipairs({"L", "R"}) do
     Sprites["snakeTail" .. d].SetPivot(0.5, 1)
 
     curves[d] = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
-    curves[d].show(16, {1, 1, 1}, "snakes", 8, "snake_body", true)
+    curves[d].show(16, {1, 1, 1}, Sprites.jar, 8, "snake_body", true)
 end
+
+Sprites.mask.SendToTop()
 
 for name, spr in pairs(Sprites) do
     local kf = InitialKeyframes[name]
@@ -382,16 +382,6 @@ local function sinEsqueWave(p1, p2, period, t)
     return sign(wave) * easeBezier.ease(p1, p1, p2, 1, math.abs(wave))
 end
 
-local dustAnim = {
-    [-1] = CreateSprite("desert_chime_dust_0", "BelowBullet"),
-    [ 1] = CreateSprite("desert_chime_dust_0", "BelowBullet")
-}
-for _, d in ipairs({-1, 1}) do
-    dustAnim[d].alpha = 0
-    dustAnim[d].SetPivot(0, 0)
-    dustAnim[d].Scale(2 * d, 2)
-end
-
 local maskMoveCurve = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
 -- possible values: IDLE, ATTACKED, DEFENDING
 SetGlobal("AnimState", "IDLE")
@@ -413,13 +403,12 @@ local function moveMaskIdle(animTime)
     local maskDistT = easeBezier.ease(.47, .17, .42, 1.22, x)
     if desc then maskDistT = 1 - maskDistT end
 
-    maskGoal = {Sprites.jar.absx - 1, Sprites.jar.absy + 57}
     local maskMaxDist = 60
     local maskAngle = math.rad(200)
-    local maskDisplacement = {maskGoal[1] + math.sin(maskAngle) * maskMaxDist, maskGoal[2] + math.cos(maskAngle) * maskMaxDist}
+    local maskDisplacement = {math.sin(maskAngle) * maskMaxDist, math.cos(maskAngle) * maskMaxDist}
 
-    maskMoveCurve.movepoint(1, maskGoal[1], maskGoal[2])
-    maskMoveCurve.movepoint(2, maskGoal[1] - 15, maskGoal[2] - 10)
+    maskMoveCurve.movepoint(1, 0, 0)
+    maskMoveCurve.movepoint(2, -15, -10)
     maskMoveCurve.movepoint(3, maskDisplacement[1], maskDisplacement[2])
     maskMoveCurve.movepoint(4, maskDisplacement[1] + 10, maskDisplacement[2] + 15)
 
@@ -442,6 +431,17 @@ local function animateBells(animTime)
     for _, d in ipairs({"chimeL", "chimeR", "maskChimeL", "maskChimeR"}) do
         Keyframes[d].rotation = InitialKeyframes[d].rotation + math.sin(animTime + offsets[d]) * 30
     end
+end
+
+local dustAnim = {
+    [-1] = CreateSprite("desert_chime_dust_0", "BelowBullet"),
+    [ 1] = CreateSprite("desert_chime_dust_0", "BelowBullet")
+}
+for _, d in ipairs({-1, 1}) do
+    dustAnim[d].alpha = 0
+    dustAnim[d].SetPivot(0, 0)
+    dustAnim[d].Scale(2 * d, 2)
+    dustAnim[d].SetParent(DesertChimeSprite)
 end
 
 local function animateBody(animTime)
@@ -469,11 +469,8 @@ local function animateBody(animTime)
         }, 0.125)
         dust.loopmode = "ONESHOTEMPTY"
 
-        local tailBottom = {
-            x = Sprites.tail.absx + math.sin(math.rad(Keyframes.tail.rotation)) * Sprites.tail.width * Keyframes.tail.xscale * Sprites.tail.xpivot,
-            y = Sprites.tail.absy - math.cos(math.rad(Keyframes.tail.rotation)) * Sprites.tail.height * Keyframes.tail.yscale * Sprites.tail.ypivot
-        }
-        dust.MoveToAbs(tailBottom.x + sign(direction) * 26, bottomPos)
+        local tailBottom = Sprites.tail.absx - DesertChimeSprite.absx + math.sin(math.rad(Keyframes.tail.rotation)) * Sprites.tail.width * Keyframes.tail.xscale * Sprites.tail.xpivot
+        dust.MoveTo(tailBottom + sign(direction) * 28, bottomPos)
     end
 end
 
@@ -538,13 +535,9 @@ local sandEmitData = {
 }
 
 local sandSprites = CreateSprite("empty")
-sandSprites.MoveTo(0, 0)
 sandSprites.SetParent(DesertChimeSprite)
+sandSprites.MoveTo(0, 0)
 sandSprites.SendToBottom()
-
-CreateLayer("SandFalls", "BelowArena", true)
-CreateLayer("SandPiles", "SandFalls", false)
-CreateLayer("SandPilesBG", "SandFalls", true)
 
 local function generateSand(v)
     local spr = CreateSprite("sand_fg")
@@ -554,17 +547,6 @@ local function generateSand(v)
     spr.SetParent(v.parent)
     spr.MoveTo(0, sandHeight)
     table.insert(v.sands, spr)
-
-    if v.vanishHeight then
-        pcall(spr.shader.Set, "fadeout", "FadeOut")
-        --spr.shader.Test("FadeOut")
-        if spr.shader.isActive then
-            spr.shader.SetFloat("height0", spr.absy - sandHeight)
-            spr.shader.SetFloat("height1", spr.absy)
-            spr.shader.SetFloat("cutoffHeight", v.vanishHeight + bottomPos)
-            spr.shader.SetFloat("cutoffDistance", v.vanishDistance)
-        end
-    end
 
     local coverSprite = CreateSprite("px")
     coverSprite.color = {0, 0, 0}
@@ -576,16 +558,26 @@ local function generateSand(v)
     coverSprite.MoveTo(0, 0)
     spr["cover"] = coverSprite
 
+    if v.vanishHeight then
+        pcall(spr.shader.Set, "fadeout", "FadeOut")
+        if spr.shader.isActive then
+            spr.shader.SetFloat("height0", spr.y - sandHeight)
+            spr.shader.SetFloat("height1", spr.y)
+            spr.shader.SetFloat("cutoffHeight", v.vanishHeight + bottomPos)
+            spr.shader.SetFloat("cutoffDistance", v.vanishDistance)
+        end
+    end
+
     return spr
 end
 
 for _, v in pairs(sandEmitData) do
     v.sands = {}
     local spr = generateSand(v)
-    spr.layer = "SandFalls"
+    spr.SetParent(sandSprites)
 
     if v.pile then
-        local pileSprite = CreateSprite("sand_pile_0")
+        local pileSprite = CreateSprite("sand_pile_new_0")
         pileSprite.SetAnimation({
             "sand_pile_new_0",
             "sand_pile_new_1",
@@ -599,9 +591,8 @@ for _, v in pairs(sandEmitData) do
         pileSprite.SetAnchor(v.anchor.x, v.anchor.y)
         pileSprite.SetParent(v.parent)
         pileSprite.MoveTo(0, 0)
-        pileSprite.layer = "SandPiles"
-        pileSprite.absy = bottomPos
         pileSprite.SetParent(sandSprites)
+        pileSprite.y = bottomPos
         pileSprite.SendToBottom()
         v.pileSprite = pileSprite
 
@@ -616,7 +607,6 @@ for _, v in pairs(sandEmitData) do
         }, 4 / sandSpeed)
         pileSpriteBG.Scale(2, 2)
         pileSpriteBG.SetPivot(0.5, 0)
-        pileSpriteBG.layer = "SandPilesBG"
         pileSpriteBG.MoveToAbs(pileSprite.absx, pileSprite.absy)
         pileSpriteBG.SetParent(sandSprites)
         pileSpriteBG.SendToBottom()
@@ -632,16 +622,19 @@ local function animateSand(animTime)
             if spr.isactive then
                 if spr.alpha > 0 then
                     spr.Move(0, -sandSpeed * Time.dt * wavespeed)
-                    spr.absx = 2 * math.floor(spr.absx / 2 + 0.5)
+                    spr.x = 2 * math.floor(spr.x / 2 + 0.5)
                     if spr.shader.isActive then
-                        spr.shader.SetFloat("height0", spr.absy - sandHeight)
-                        spr.shader.SetFloat("height1", spr.absy)
+                        spr.shader.SetFloat("height0", spr.y - sandHeight)
+                        spr.shader.SetFloat("height1", spr.y)
+                        if spr.y - spr.absy + spr["cover"].absy < v.vanishHeight + bottomPos then
+                            spr["cover"].alpha = 0
+                        end
                     end
-                    if spr.absy < bottomPos then
+                    if spr.y < bottomPos then
                         spr.Remove()
                         table.remove(v.sands, i)
-                    elseif spr.absy < bottomPos + 2 + sandHeight then
-                        spr.yscale = spr.absy - (bottomPos + 2)
+                    elseif spr.y < bottomPos + 2 + sandHeight then
+                        spr.yscale = spr.y - (bottomPos + 2)
                     end
                 end
             else
@@ -657,8 +650,8 @@ local function animateSand(animTime)
             local newSand = v.sands[#v.sands]
 
             if newSand.absy - topSand.absy > topSand.height * topSand.yscale then
-                newSand.layer = "SandFalls"
                 newSand.SetParent(sandSprites)
+                newSand.rotation = 0
                 newSand.alpha = 1
                 newSand["cover"].alpha = 1
                 newSand.absy = topSand.absy + topSand.height * topSand.yscale
@@ -682,8 +675,6 @@ function Attacked(intensity)
 end
 
 function UpdateKeyframes()
-    DesertChimeSprite.Move(10 * Time.dt, 10 * Time.dt)
-
     animateBells(ElapsedTime())
     animateBody(ElapsedTime())
     animateArms(ElapsedTime())
@@ -697,8 +688,8 @@ function UpdateKeyframes()
     local animTime = Time.time - animStart
 
     if GetGlobal("AnimState") == "DEFENDING" then
-        Keyframes.mask.x = maskGoal[1]
-        Keyframes.mask.y = maskGoal[2]
+        Keyframes.mask.x = 0
+        Keyframes.mask.y = 0
         Keyframes.mask.rotation = InitialKeyframes.mask.rotation
 
         Keyframes.snakeHeadL.rotation = InitialKeyframes.snakeHeadL.rotation
@@ -708,8 +699,8 @@ function UpdateKeyframes()
             moveMaskIdle(animTime)
         elseif GetGlobal("AnimState") == "ATTACKED" then
             local movementShiver = shiver(1, 4, attackIntensity, animTime)
-            Keyframes.mask.x = maskGoal[1] + movementShiver
-            Keyframes.mask.y = maskGoal[2]
+            Keyframes.mask.x = movementShiver
+            Keyframes.mask.y = 0
 
             local rotationShiver = shiver(2, 5, 6, animTime)
 
@@ -762,7 +753,7 @@ function ApplyKeyframes()
     end
 
     for _, d in ipairs({"L", "R"}) do
-        Sprites["tail" .. d].absy = DesertChimeSprite.absy + bottomPos + Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
+        Sprites["tail" .. d].absy = DesertChimeSprite.y + bottomPos + Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
     end
 end
 
