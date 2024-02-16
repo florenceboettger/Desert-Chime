@@ -456,6 +456,14 @@ local function animateBody(animTime)
     local tailRotPeriod = 1.0
     Keyframes.tail.rotation = InitialKeyframes.tail.rotation + 12 * sinEsqueWave(.2, .5, tailRotPeriod, animTime)
 
+    if Keyframes.tail.rotation > 0 then
+        Sprites.tailL.Set("desert_chime_tail_l_cut")
+        Sprites.tailR.Set("desert_chime_tail_r")
+    else
+        Sprites.tailL.Set("desert_chime_tail_l")
+        Sprites.tailR.Set("desert_chime_tail_r_cut")
+    end
+
     if animTime % tailRotPeriod >= tailRotPeriod/2 * 0.75 and animTime % tailRotPeriod < tailRotPeriod/2 * 0.75 + Time.dt * wavespeed * 1.5 then
         local direction = sign(triangleWave(animTime, tailRotPeriod))
         local dust = dustAnim[sign(direction)]
@@ -585,7 +593,7 @@ for _, v in pairs(sandEmitData) do
             "sand_pile_new_3",
             "sand_pile_new_4",
             "sand_pile_new_5",
-        }, 4 / sandSpeed)
+        }, 6 / sandSpeed)
         pileSprite.Scale(2, 2)
         pileSprite.SetPivot(0.5, 0)
         pileSprite.SetAnchor(v.anchor.x, v.anchor.y)
@@ -604,7 +612,7 @@ for _, v in pairs(sandEmitData) do
             "sand_pile_bg_new_3",
             "sand_pile_bg_new_4",
             "sand_pile_bg_new_5",
-        }, 4 / sandSpeed)
+        }, 6 / sandSpeed)
         pileSpriteBG.Scale(2, 2)
         pileSpriteBG.SetPivot(0.5, 0)
         pileSpriteBG.MoveToAbs(pileSprite.absx, pileSprite.absy)
@@ -630,7 +638,7 @@ local function animateSand(animTime)
                             spr["cover"].alpha = 0
                         end
                     end
-                    if spr.y < bottomPos then
+                    if spr.y < bottomPos + 2 then
                         spr.Remove()
                         table.remove(v.sands, i)
                     elseif spr.y < bottomPos + 2 + sandHeight then

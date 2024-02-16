@@ -53,6 +53,7 @@ function EncounterStarting()
     LabelBarDiff = UI.hpbar.background.absx - (UI.hplabel.absx + UI.hplabel.width)
     HPBarDiff = UI.hptext.absx - (UI.hpbar.background.absx + UI.hpbar.background.xscale)
     require "Animations/desert_chime_anim"
+    Sandstorm = require "Animations/sandstorm_anim"
     
     UI.hpbar.background.color = {0.4, 0.4, 0.4}
     UI.hpbar.fill.color = {1, 1, 1}
@@ -101,6 +102,10 @@ function Update()
         UpdateKeyframes()
         ApplyKeyframes()
         UpdateSplines()
+    end
+
+    if Sandstorm and Sandstorm.active then
+        Sandstorm.update()
     end
 end
 
