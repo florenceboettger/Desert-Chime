@@ -83,7 +83,7 @@ self.grazeHitbox = { sprite = self.grazeHitbox }
 
 self.setTP(0)
 
-__Update = Update
+PostTPUpdate = Update
 
 function Update()
     if self.active then
@@ -98,20 +98,20 @@ function Update()
         end
         self.grazeSprite.rotation = Player.sprite.rotation
     end
-    if __Update then
-        __Update()
+    if PostTPUpdate then
+        PostTPUpdate()
     end
 end
 
-__EnteringState = EnteringState
+PostTPEnteringState = EnteringState
 
 function EnteringState(newstate, oldstate)
     if oldstate == "DEFENDING" and newstate ~= "PAUSE" and newstate ~= "DEFENDING" then
         self.grazeSprite.alpha = 0
     end
 
-    if __EnteringState then
-        __EnteringState(newstate, oldstate)
+    if PostTPEnteringState then
+        PostTPEnteringState(newstate, oldstate)
     end
 end
 

@@ -125,6 +125,9 @@ function EncounterStarting()
 end
 
 function Update()
+    if (Arena.currentwidth % 2 ~= 0 or Arena.currentheight ~= 0) and not Arena.isResizing then
+        Arena.ResizeImmediate(math.floor(Arena.width / 2) * 2, math.floor(Arena.height / 2) * 2)
+    end
     --[[if Player.sprite.shader.isactive then
     
         Player.sprite.shader.SetVector("yOffset", {10 * math.sin(Time.time * 2 * math.pi), 0, 0, 0})

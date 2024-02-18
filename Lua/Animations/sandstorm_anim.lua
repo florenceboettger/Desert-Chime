@@ -23,7 +23,9 @@ self.sandstormFG.SetPivot(0.5, 0.5)
 self.sandstormFG.SetParent(self.stencilFG)
 self.sandstormFG.alpha = 0.5
 
-function self.update()
+PostSandstormUpdate = Update
+
+function Update()
     self.stencil.Move(10 * Time.dt, 0)
     self.stencil.x = self.stencil.x % 640
     self.stencilFG.x = self.stencil.x
@@ -33,6 +35,10 @@ function self.update()
 
     self.sandstormFG.absx = (self.sandstormFG.absx + 320 * Time.dt) % 640
     self.sandstormFG.absy = 240 + 25 * math.sin(Time.time / 5 * 2 * math.pi)
+
+    if PostSandstormUpdate then
+        PostSandstormUpdate()
+    end
 end
 
 return self

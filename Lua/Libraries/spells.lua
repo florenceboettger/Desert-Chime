@@ -252,7 +252,7 @@ local function setupActionCommand()
     self.list[self.selected]:init()
 end
 
-___Update = Update
+PostSpellsUpdate = Update
 
 function Update()
     if GetCurrentState() == "SPELLSELECT" then
@@ -290,10 +290,12 @@ function Update()
         self.list[self.selected]:func(spellTime)
     end
 
-    ___Update()
+    if PostSpellsUpdate then
+        PostSpellsUpdate()
+    end
 end
 
-___EnteringState = EnteringState
+PostSpellsEnteringState = EnteringState
 
 function EnteringState(newstate, oldstate)
     if oldstate == "ACTIONSELECT" and newstate == "ENEMYSELECT" and UI.GetCurrentButton() == "FIGHT" then
@@ -321,7 +323,9 @@ function EnteringState(newstate, oldstate)
         setupActionCommand()
     end
 
-    ___EnteringState(newstate, oldstate)
+    if PostSpellsEnteringState then
+        PostSpellsEnteringState(newstate, oldstate)
+    end
 end
 
 return self

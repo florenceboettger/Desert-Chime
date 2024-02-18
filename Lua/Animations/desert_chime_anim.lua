@@ -199,7 +199,7 @@ local curves = {}
 
 DesertChimeSprite = CreateSprite("empty")
 
-Sprites.body = enemies[1]["monstersprite"]
+Sprites.body = CreateSprite("desert_chime_body")
 Sprites.body.SetParent(DesertChimeSprite)
 Sprites.body.Scale(2, 2)
 Sprites.body.SetPivot(26 / 53, 4 / 57)
@@ -236,6 +236,11 @@ Sprites.bodyClone.Scale(2, 2)
 Sprites.bodyClone.SetPivot(26 / 53, 4 / 57)
 Sprites.bodyClone.SetAnchor(26 / 53, 4 / 57)
 Sprites.bodyClone.MoveTo(0, 0)
+
+local floor = CreateSprite("desert_chime_floor")
+floor.SetParent(DesertChimeSprite)
+floor.Scale(2, 2)
+floor.MoveTo(0, bottomPos)
 
 for _, d in ipairs({"L", "R"}) do
     local xscale = 2
@@ -283,7 +288,7 @@ end
 Sprites.armL.SetAnchor(9 / 53, 31 / 57)
 Sprites.armL.SendToBottom()
 
-Sprites.jar = CreateSprite("desert_chime_jar")
+Sprites.jar = enemies[1]["monstersprite"]
 Sprites.jar.SetPivot(0.5, 0)
 Sprites.jar.SetParent(Sprites.body)
 Sprites.jar.SetAnchor(27 / 53, 52 / 57)
@@ -579,6 +584,8 @@ local function generateSand(v)
     return spr
 end
 
+DesertChimeSprite.y = 276
+
 for _, v in pairs(sandEmitData) do
     v.sands = {}
     local spr = generateSand(v)
@@ -762,6 +769,10 @@ function ApplyKeyframes()
 
     for _, d in ipairs({"L", "R"}) do
         Sprites["tail" .. d].absy = DesertChimeSprite.y + bottomPos + Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
+    end
+
+    if enemies[1] ~= nil and enemies[1]["bubblesprite"] ~= nil then
+        enemies[1]["bubblesprite"].rotation = 0
     end
 end
 

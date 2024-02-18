@@ -100,7 +100,7 @@ pulseSprite.alpha = 0
 
 self.setShield(0)
 
-_Update = Update
+PostShieldUpdate = Update
 
 function Update()
     local shieldElapsedTime = Time.time - activationTime
@@ -153,10 +153,12 @@ function Update()
         end
     end
 
-    _Update()
+    if PostShieldUpdate then
+        PostShieldUpdate()
+    end
 end
 
-_EnteringState = EnteringState
+PostShieldEnteringState = EnteringState
 
 function EnteringState(newstate, oldstate)
     if oldstate == "DEFENDING" and newstate ~= "PAUSE" and newstate ~= "DEFENDING" then
@@ -175,7 +177,9 @@ function EnteringState(newstate, oldstate)
         Player.sprite.MoveToAbs(-100, -100)
     end
 
-    _EnteringState(newstate, oldstate)
+    if PostShieldEnteringState then
+        PostShieldEnteringState(newstate, oldstate)
+    end
 end
 
 return self

@@ -1,14 +1,17 @@
---easeBezier = require "easeBezier"
+easeBezier = require "easeBezier"
 --parseDialogue = require "parseDialogue"
 require "ScriptOwnerBypass"
 
 -- music = "shine_on_you_crazy_diamond" --Either OGG or WAV. Extension is added automatically. Uncomment for custom music.
 encountertext = "The sand swirls around you." --Modify as necessary. It will only be read out in the action select screen.
-nextwaves = {"bullettest_touhou"}
+nextwaves = {"martlet_wave"}
 wavetimerOrig = 4.0
-wavetimer = 4.0
+wavetimer = 5.0
 wavespeed = 1.0
 arenasize = {100, 100}
+
+local moveMonster = {150, -150}
+local moveArena = {-150, 0}
 
 autolinebreak = true
 noscalerotationbug = true
@@ -19,7 +22,7 @@ enemies = {
 }
 
 enemypositions = {
-    {0, 46}
+    {0, 0}
 }
 
 function SetWavetimer(t)
@@ -43,13 +46,13 @@ function Mix(x, y, a)
     return x * (1 - a) + y * a
 end
 
--- A custom list with attacks to choose from. Actual selection happens in EnemyDialogueEnding(). Put here in case you want to use it.
-possible_attacks = {"bullettest_bouncy", "bullettest_chaserorb", "bullettest_touhou"}
-
 LabelBarDiff = 0
 HPBarDiff = 0
 
 function EncounterStarting()
+    CreateState("PREWAVEMOVE")
+    CreateState("POSTWAVEMOVE")
+
     LabelBarDiff = UI.hpbar.background.absx - (UI.hplabel.absx + UI.hplabel.width)
     HPBarDiff = UI.hptext.absx - (UI.hpbar.background.absx + UI.hpbar.background.xscale)
     require "Animations/desert_chime_anim"
@@ -89,11 +92,61 @@ function EncounterStarting()
     tp = require "tp"
     tp.grazeSpriteColor = {132, 132, 132}
 
+    YellowShot = require "yellowShot"
+
     -- Testing
     --tp.setTP(100)
 end
 
+local startMoveTime = -1
+local totalMoveTime = 0.5
+
+local startArenaPos = {x = 0, y = 0}
+local endArenaPos = {x = 0, y = 0}
+local startArenaSize = {x = 0, y = 0}
+local endArenaSize = {x = 0, y = 0}
+local startMonster = {x = 0, y = 0}
+local endMonster = {x = 0, y = 0}
+
 function Update()
+    if (Arena.currentwidth % 2 ~= 0 or Arena.currentheight ~= 0) and not Arena.isResizing then
+        Arena.ResizeImmediate(math.floor(Arena.width / 2) * 2, math.floor(Arena.height / 2) * 2)
+    end
+
+    if GetCurrentState() == "PREWAVEMOVE" then
+        if (Time.time - startMoveTime) <= totalMoveTime then            
+            local interp = easeBezier.ease(.28, .28, .57, 1, (Time.time - startMoveTime) / totalMoveTime)
+            Arena.MoveTo(
+                Mix(startArenaPos.x, endArenaPos.x, interp),
+                Mix(startArenaPos.y, endArenaPos.y, interp),
+                true, true)
+            Arena.ResizeImmediate(
+                Mix(startArenaSize.x, endArenaSize.x, interp),
+                Mix(startArenaSize.y, endArenaSize.y, interp)
+            )
+            DesertChimeSprite.MoveTo(
+                Mix(startMonster.x, endMonster.x, interp),
+                Mix(startMonster.y, endMonster.y, interp)
+            )
+        else
+            Arena.MoveTo(endArenaPos.x, endArenaPos.y, true, true)
+            Arena.ResizeImmediate(endArenaSize.x, endArenaSize.y)
+            DesertChimeSprite.MoveTo(endMonster.x, endMonster.y)
+            State("DEFENDING")
+        end
+    elseif GetCurrentState() == "POSTWAVEMOVE" then
+        if (Time.time - startMoveTime) <= totalMoveTime then            
+            local interp = easeBezier.ease(.28, .28, .57, 1, (Time.time - startMoveTime) / totalMoveTime)
+            DesertChimeSprite.MoveTo(
+                Mix(endMonster.x, startMonster.x, interp),
+                Mix(endMonster.y, startMonster.y, interp)
+            )
+        else
+            DesertChimeSprite.MoveTo(startMonster.x, startMonster.y)
+            State("ACTIONSELECT")
+        end
+    end
+
     UI.hplabel.absx = 162
     UI.hpbar.background.absx = UI.hplabel.absx + UI.hplabel.width + LabelBarDiff
     UI.hptext.absx = UI.hpbar.background.absx + UI.hpbar.background.xscale + HPBarDiff
@@ -103,13 +156,24 @@ function Update()
         ApplyKeyframes()
         UpdateSplines()
     end
-
-    if Sandstorm and Sandstorm.active then
-        Sandstorm.update()
-    end
 end
 
 function EnteringState(newstate, oldstate)
+    if oldstate ~= "PREWAVEMOVE" and newstate == "DEFENDING" then
+        startMoveTime = Time.time
+        startArenaPos = {x = Arena.x, y = Arena.y}
+        endArenaPos = {x = Arena.x - 140, y = Arena.y + 50}
+        startArenaSize = {x = Arena.width, y = Arena.height}
+        endArenaSize = {x = arenasize[1], y = arenasize[2]}
+        startMonster = {x = DesertChimeSprite.x, y = DesertChimeSprite.y}
+        endMonster = {x = DesertChimeSprite.x + 140, y = DesertChimeSprite.y - 140}
+        State("PREWAVEMOVE")
+    end
+    if oldstate == "DEFENDING" then
+        startMoveTime = Time.time
+        Player.sprite.MoveTo(-100, -100)
+        State("POSTWAVEMOVE")
+    end
 end
 
 function EnemyDialogueStarting()
