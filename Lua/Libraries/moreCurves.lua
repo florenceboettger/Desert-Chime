@@ -13,7 +13,7 @@ function self.circle(x, y, r)
         return
             c.x + c.r * math.sin(t * 2 * math.pi),
             c.y + c.r * math.cos(t * 2 * math.pi)
-    end)
+        end)
 
     curve.x = x
     curve.y = y

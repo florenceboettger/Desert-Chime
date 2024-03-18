@@ -28,32 +28,8 @@ function Mix(x, y, a)
 end
 
 function Update()
-    --if movingArena and Time.time - startTime <= moveTime then
-    --    Player.SetControlOverride(true)
-    --    if Encounter["yellowShot"] then
-    --        Encounter["yellowShot"].lock = true
-    --    end
-    --    local interp = easeBezier.ease(.28, .28, .57, 1, (Time.time - startTime) / moveTime)
-    --    Arena.MoveTo(
-    --        Mix(startArena.x, endArena.x, interp),
-    --        Mix(startArena.y, endArena.y, interp),
-    --        true, true)
-    --    monsterSprite.MoveTo(
-    --        Mix(startMonster.x, endMonster.x, interp),
-    --        Mix(startMonster.y, endMonster.y, interp)
-    --    )
-    --else
-    --    Player.SetControlOverride(false)
-    --    if Encounter["yellowShot"] then
-    --        Encounter["yellowShot"].lock = false
-    --    end
-    --    movingArena = false
-    --    Arena.MoveTo(endArena.x, endArena.y, true, true)
-    --    monsterSprite.MoveTo(endMonster.x, endMonster.y)
-    --end
-
     spawntimer = spawntimer + 1
-    if(WaveTime() % 0.5 < lastTime % 0.5) then
+    if (WaveTime() % 0.5 < lastTime % 0.5) then
         local numbullets = 10
         for i=1,numbullets+1 do
             local bullet = CreateProjectile('bullet', 0, yOffset)

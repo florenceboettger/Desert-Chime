@@ -1,4 +1,5 @@
 easeBezier = require "easeBezier"
+gas = require "gas"
 --parseDialogue = require "parseDialogue"
 require "ScriptOwnerBypass"
 
@@ -57,7 +58,7 @@ function EncounterStarting()
     HPBarDiff = UI.hptext.absx - (UI.hpbar.background.absx + UI.hpbar.background.xscale)
     require "Animations/desert_chime_anim"
     Sandstorm = require "Animations/sandstorm_anim"
-    
+
     UI.hpbar.background.color = {0.4, 0.4, 0.4}
     UI.hpbar.fill.color = {1, 1, 1}
     UI.fightbtn.Set("SPELL_martlet")
@@ -108,13 +109,16 @@ local endArenaSize = {x = 0, y = 0}
 local startMonster = {x = 0, y = 0}
 local endMonster = {x = 0, y = 0}
 
+local arenaCurves = {}
+
 function Update()
     if (Arena.currentwidth % 2 ~= 0 or Arena.currentheight ~= 0) and not Arena.isResizing then
         Arena.ResizeImmediate(math.floor(Arena.width / 2) * 2, math.floor(Arena.height / 2) * 2)
     end
 
     if GetCurrentState() == "PREWAVEMOVE" then
-        if (Time.time - startMoveTime) <= totalMoveTime then            
+        --Arena.Hide()
+        if (Time.time - startMoveTime) <= totalMoveTime then
             local interp = easeBezier.ease(.28, .28, .57, 1, (Time.time - startMoveTime) / totalMoveTime)
             Arena.MoveTo(
                 Mix(startArenaPos.x, endArenaPos.x, interp),
@@ -135,7 +139,7 @@ function Update()
             State("DEFENDING")
         end
     elseif GetCurrentState() == "POSTWAVEMOVE" then
-        if (Time.time - startMoveTime) <= totalMoveTime then            
+        if (Time.time - startMoveTime) <= totalMoveTime then
             local interp = easeBezier.ease(.28, .28, .57, 1, (Time.time - startMoveTime) / totalMoveTime)
             DesertChimeSprite.MoveTo(
                 Mix(endMonster.x, startMonster.x, interp),
@@ -167,6 +171,19 @@ function EnteringState(newstate, oldstate)
         endArenaSize = {x = arenasize[1], y = arenasize[2]}
         startMonster = {x = DesertChimeSprite.x, y = DesertChimeSprite.y}
         endMonster = {x = DesertChimeSprite.x + 140, y = DesertChimeSprite.y - 140}
+        
+        for i = 1, 8 do
+            arenaCurves[i] = gas.curve(
+                Arena.currentx, Arena.currenty - Arena.currentheight/2,
+                Arena.currentx + Arena.currentwidth/2, Arena.currenty - Arena.currentheight/2,
+                Arena.currentx + Arena.currentwidth/2, Arena.currenty - Arena.currentheight/2,
+                Arena.currentx + Arena.currentwidth/2, Arena.currenty - Arena.currentheight/2
+            )
+            arenaCurves[i].updatecolor({1, 0, 0})
+            arenaCurves[i].updatelayer("Top")
+            arenaCurves[i].updatewidth(5)
+        end
+
         State("PREWAVEMOVE")
     end
     if oldstate == "DEFENDING" then
