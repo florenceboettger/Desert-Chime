@@ -79,7 +79,7 @@ OBJECTS
 
     - curve.cleardraw()
       - removes the segments drawn by curve.draw() or curve.show()
-      - automatically called whenever curve.draw() or curve.show() are
+      - automatically called whenever curve.draw() or curve.show() are called
 
 	- curve.updatelayer(layer)
 	  - if curve is being displayed, updates the layer of the sprites
@@ -153,7 +153,7 @@ local function magic(t, p1, p2, p3, p4)
 	return (1 - t)^3 * p1 + 3 * (1 - t)^2 * t * p2 + 3 * (1 - t) * t^2 * p3 + t^3 * p4
 end
 
-local function createline(layer, width, color, sprite, top)
+local function createline(layer, width, color, sprite, top, anchor)
 	local spr 
 	if type(layer) == type('') then
 		spr = CreateSprite(sprite, layer)
@@ -162,7 +162,7 @@ local function createline(layer, width, color, sprite, top)
 		spr.SetParent(layer)
 	end
 	if not top then spr.SendToBottom() end
-	spr.SetPivot(0,0.5)
+	spr.SetPivot(0, anchor)
 	spr.yscale = width / spr.height
 	spr.color = color
 
@@ -233,13 +233,14 @@ function self.genericcurve(func)
 		end
 	end
 
-	function curve.show(segments, color, layer, width, sprite, top)
+	function curve.show(segments, color, layer, width, sprite, top, anchor)
 		if type(segments) ~= type(1) and type(segments) ~= type(nil) then error(argIdxWrongTypeError:format(1, type(1), type(segments), 2)) end
 		if type(color) ~= type({}) and type(color) ~= type(nil) then error(argIdxWrongTypeError:format(2, type({}), type(color), 2)) end
 		if type(layer) ~= type('') and type(layer) ~= "userdata" and type(layer) ~= type(nil) then error(argIdxWrongTypeError:format(3, type(''), type(layer), 2)) end
 		if type(width) ~= type(1) and type(width) ~= type(nil) then error(argIdxWrongTypeError:format(4, type(1), type(width), 2)) end
 		if type(sprite) ~= type('') and type(sprite) ~= type(nil) then error(argIdxWrongTypeError:format(5, type(''), type(sprite), 2)) end
 		if type(top) ~= type(true) and type(top) ~= type(nil) then error(argIdxWrongTypeError:format(6, type(true), type(top), 2)) end
+		if type(anchor) ~= type(1) and type(anchor) ~= type(nil) then error(argIdxWrongTypeError:format(7, type(1), type(anchor), 2)) end
 
 		if color then
 			for i = 1, #color do
@@ -252,6 +253,7 @@ function self.genericcurve(func)
 		layer = layer or 'Top'
 		width = width or 1
 		sprite = sprite or "px"
+		anchor = anchor or 0.5
 		if top == nil then top = true end
 
 		curve.cleardraw()
@@ -259,12 +261,12 @@ function self.genericcurve(func)
 		local step = 1 / segments
 
 		for t = step, 1 - step * 0.99, step do
-			local spr = createline(layer, width, color, sprite, top)
+			local spr = createline(layer, width, color, sprite, top, anchor)
 			updateline(curve, spr, t - step, t)
 			curve.segments[#curve.segments+1] = spr
 		end
 
-		local spr = createline(layer, width, color, sprite, top)
+		local spr = createline(layer, width, color, sprite, top, anchor)
 		updateline(curve, spr, 1 - step, 1)
 		curve.segments[#curve.segments+1] = spr
 	end

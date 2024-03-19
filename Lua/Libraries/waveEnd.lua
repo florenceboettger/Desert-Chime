@@ -84,6 +84,22 @@ if Encounter["tp"] then
     end
 end
 
+__Update = Update
+
+function Update()
+    local playerDist = math.sqrt(Player.x * Player.x + Player.y * Player.y)
+    local arenaWidth = Arena.currentwidth/2 - Player.sprite.width/2
+    if playerDist > arenaWidth then
+        Player.MoveTo(
+            Player.x / playerDist * arenaWidth,
+            Player.y / playerDist * arenaWidth
+        )
+    end
+    if __Update then
+        __Update()
+    end
+end
+
 _EndingWave = EndingWave
 
 function EndingWave()

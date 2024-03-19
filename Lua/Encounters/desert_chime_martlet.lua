@@ -50,6 +50,9 @@ end
 LabelBarDiff = 0
 HPBarDiff = 0
 
+local outerArenaCircleSprite
+local innerArenaCircleSprite
+
 function EncounterStarting()
     CreateState("PREWAVEMOVE")
     CreateState("POSTWAVEMOVE")
@@ -95,12 +98,22 @@ function EncounterStarting()
 
     YellowShot = require "yellowShot"
 
+    outerArenaCircleSprite = CreateSprite("circle", "BelowArena")
+    outerArenaCircleSprite.alpha = 0
+
+    innerArenaCircleSprite = CreateSprite("circle")
+    innerArenaCircleSprite.SetParent(outerArenaCircleSprite)
+    innerArenaCircleSprite.color = {0, 0, 0}
+    innerArenaCircleSprite.alpha = 0
+
     -- Testing
     --tp.setTP(100)
 end
 
 local startMoveTime = -1
 local totalMoveTime = 0.5
+
+local circleArena = true
 
 local startArenaPos = {x = 0, y = 0}
 local endArenaPos = {x = 0, y = 0}
@@ -110,6 +123,72 @@ local startMonster = {x = 0, y = 0}
 local endMonster = {x = 0, y = 0}
 
 local arenaCurves = {}
+local innerCurves = {}
+local borderWidth = 5
+local circleBezierConstant = 0.265216 -- 4/3 * tan(pi/16)
+local sqrtPointFive = math.sqrt(2)/2
+
+local function arenaCenter()
+    return {
+        x = Arena.currentx,
+        y = Arena.currenty + Arena.currentheight/2
+    }
+end
+
+local function arenaWidth()
+    return Arena.currentwidth + borderWidth
+end
+
+local function arenaHeight()
+    return Arena.currentheight + borderWidth
+end
+
+local function updateArenaCurves(curves, interp)
+    for i = 1, 4 do
+        local horizontalDir = (i % 2 == 0) and 1 or -1
+        local verticalDir = (math.floor((i - 1) / 2) == 0) and 1 or -1
+        local outerPoint = {
+            x = arenaCenter().x,
+            y = arenaCenter().y - verticalDir * arenaHeight()/2}
+        local innerPoint = {
+            x = arenaCenter().x + horizontalDir * arenaWidth()/2 * sqrtPointFive,
+            y = arenaCenter().y - verticalDir * arenaHeight()/2 * sqrtPointFive}
+        curves[i].movepoint(1,
+            outerPoint.x,
+            outerPoint.y)
+        curves[i].movepoint(2,
+            outerPoint.x + horizontalDir * arenaWidth()/2 * circleBezierConstant,
+            outerPoint.y)
+        curves[i].movepoint(3,
+            Mix(outerPoint.x + horizontalDir * arenaWidth()/2 + borderWidth/2, innerPoint.x, interp),
+            Mix(outerPoint.y, innerPoint.y, interp))
+        curves[i].movepoint(4,
+            Mix(outerPoint.x + horizontalDir * arenaWidth()/2 * (1 - circleBezierConstant), innerPoint.x - horizontalDir * arenaWidth()/2 * sqrtPointFive * circleBezierConstant, interp),
+            Mix(outerPoint.y, innerPoint.y - verticalDir * arenaHeight()/2 * sqrtPointFive * circleBezierConstant, interp))
+    end
+    for i = 5, 8 do
+        local horizontalDir = (i % 2 == 0) and 1 or -1
+        local verticalDir = (math.floor((i - 5) / 2) == 0) and 1 or -1
+        local outerPoint = {
+            x = arenaCenter().x - horizontalDir * arenaWidth()/2,
+            y = arenaCenter().y}
+        local innerPoint = {
+            x = arenaCenter().x - horizontalDir * arenaWidth()/2 * sqrtPointFive,
+            y = arenaCenter().y + verticalDir * arenaHeight()/2 * sqrtPointFive}
+        curves[i].movepoint(1,
+            outerPoint.x,
+            outerPoint.y)
+        curves[i].movepoint(2,
+            outerPoint.x,
+            outerPoint.y + verticalDir * arenaHeight()/2 * circleBezierConstant)
+        curves[i].movepoint(3,
+            Mix(outerPoint.x, innerPoint.x, interp),
+            Mix(outerPoint.y + verticalDir * arenaHeight()/2 + borderWidth/2, innerPoint.y, interp))
+        curves[i].movepoint(4,
+            Mix(outerPoint.x, innerPoint.x - horizontalDir * arenaWidth()/2 * sqrtPointFive * circleBezierConstant, interp),
+            Mix(outerPoint.y + verticalDir * arenaHeight()/2 * (1 - circleBezierConstant), innerPoint.y - verticalDir * arenaHeight()/2 * sqrtPointFive * circleBezierConstant, interp))
+    end
+end
 
 function Update()
     if (Arena.currentwidth % 2 ~= 0 or Arena.currentheight ~= 0) and not Arena.isResizing then
@@ -117,7 +196,6 @@ function Update()
     end
 
     if GetCurrentState() == "PREWAVEMOVE" then
-        --Arena.Hide()
         if (Time.time - startMoveTime) <= totalMoveTime then
             local interp = easeBezier.ease(.28, .28, .57, 1, (Time.time - startMoveTime) / totalMoveTime)
             Arena.MoveTo(
@@ -132,10 +210,30 @@ function Update()
                 Mix(startMonster.x, endMonster.x, interp),
                 Mix(startMonster.y, endMonster.y, interp)
             )
+            if circleArena then                
+                Arena.Hide(false)
+                for i = 1, 8 do
+                    innerCurves[i].updatewidth(borderWidth/2 + math.min(Arena.currentwidth, Arena.currentheight)/2)
+                end
+                updateArenaCurves(arenaCurves, interp)
+                updateArenaCurves(innerCurves, interp)
+            end
         else
             Arena.MoveTo(endArenaPos.x, endArenaPos.y, true, true)
             Arena.ResizeImmediate(endArenaSize.x, endArenaSize.y)
             DesertChimeSprite.MoveTo(endMonster.x, endMonster.y)
+            if circleArena then
+                for i = 1, 8 do
+                    arenaCurves[i].cleardraw()
+                    innerCurves[i].cleardraw()
+                end
+                outerArenaCircleSprite.alpha = 1
+                outerArenaCircleSprite.MoveTo(arenaCenter().x, arenaCenter().y)
+                outerArenaCircleSprite.Scale((Arena.currentwidth + 2 * borderWidth) / innerArenaCircleSprite.width, (Arena.currentheight + 2 * borderWidth) / innerArenaCircleSprite.height)
+
+                innerArenaCircleSprite.alpha = 1
+                innerArenaCircleSprite.Scale((Arena.currentwidth) / outerArenaCircleSprite.width, (Arena.currentheight) / outerArenaCircleSprite.height)
+            end
             State("DEFENDING")
         end
     elseif GetCurrentState() == "POSTWAVEMOVE" then
@@ -171,17 +269,15 @@ function EnteringState(newstate, oldstate)
         endArenaSize = {x = arenasize[1], y = arenasize[2]}
         startMonster = {x = DesertChimeSprite.x, y = DesertChimeSprite.y}
         endMonster = {x = DesertChimeSprite.x + 140, y = DesertChimeSprite.y - 140}
-        
-        for i = 1, 8 do
-            arenaCurves[i] = gas.curve(
-                Arena.currentx, Arena.currenty - Arena.currentheight/2,
-                Arena.currentx + Arena.currentwidth/2, Arena.currenty - Arena.currentheight/2,
-                Arena.currentx + Arena.currentwidth/2, Arena.currenty - Arena.currentheight/2,
-                Arena.currentx + Arena.currentwidth/2, Arena.currenty - Arena.currentheight/2
-            )
-            arenaCurves[i].updatecolor({1, 0, 0})
-            arenaCurves[i].updatelayer("Top")
-            arenaCurves[i].updatewidth(5)
+
+        if circleArena then
+            local invert = {false, true, true, false, true, false, false, true}
+            for i = 1, 8 do
+                innerCurves[i] = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
+                innerCurves[i].show(12, {0, 0, 0}, "BelowArena", borderWidth / 2 + math.max(arenasize[1], arenasize[2])/2, nil, nil, invert[i] and 0 or 1)
+                arenaCurves[i] = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
+                arenaCurves[i].show(12, {1, 1, 1}, "BelowArena", borderWidth)
+            end
         end
 
         State("PREWAVEMOVE")
@@ -189,6 +285,11 @@ function EnteringState(newstate, oldstate)
     if oldstate == "DEFENDING" then
         startMoveTime = Time.time
         Player.sprite.MoveTo(-100, -100)
+        if circleArena then
+            innerArenaCircleSprite.alpha = 0
+            outerArenaCircleSprite.alpha = 0
+            Arena.Show()
+        end
         State("POSTWAVEMOVE")
     end
 end
