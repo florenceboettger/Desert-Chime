@@ -69,7 +69,13 @@ function SetupSlitherAnimation(name, hats)
     Slithers[name] = sprites
 end
 
-function AnimateSlithers()
+PreSlitherUpdate = Update
+
+function Update()
+    if PreSlitherUpdate then
+        PreSlitherUpdate()
+    end
+
     local modTime = (Time.time / 2) % 1
     local c = 0
 

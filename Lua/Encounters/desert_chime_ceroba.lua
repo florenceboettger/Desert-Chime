@@ -1,7 +1,6 @@
 easeBezier = require "easeBezier"
 parseDialogue = require "parseDialogue"
 require "ScriptOwnerBypass"
-require "Animations/sir_slither_anim"
 
 -- music = "shine_on_you_crazy_diamond" --Either OGG or WAV. Extension is added automatically. Uncomment for custom music.
 encountertext = "The sand swirls around you." --Modify as necessary. It will only be read out in the action select screen.
@@ -17,10 +16,10 @@ noscalerotationbug = true
 --playerskipdocommand = true
 
 enemies = {
-    --"desert_chime"
-    "sir_slither_esq",
-    "sir_slither_esq_esq",
-    "bowll"
+    "desert_chime"
+    --"sir_slither_esq",
+    --"sir_slither_esq_esq",
+    --"bowll"
 }
 
 enemypositions = {
@@ -84,12 +83,14 @@ function ActivateSpellButton()
 end
 
 function EncounterStarting()
-    --require "Animations/desert_chime_anim"
-    SetupSlitherAnimation("sir_slither_esq", 1)
-    SetupSlitherAnimation("sir_slither_esq_esq", 2)
-    require "Animations/bowll_anim"
+    require "Animations/desert_chime_anim"
+    Sandstorm = require "Animations/sandstorm_anim"
+    --require "Animations/sir_slither_anim"
+    --SetupSlitherAnimation("sir_slither_esq", 1)
+    --SetupSlitherAnimation("sir_slither_esq_esq", 2)
+    --require "Animations/bowll_anim"
 
-    parseDialogue.loadDialogue(require "Dialogue/testing", true)
+    --parseDialogue.loadDialogue(require "Dialogue/testing", true)
 
     -- Setup Fight Command
     UI.background.Set("empty")
@@ -119,9 +120,9 @@ function EncounterStarting()
     tp.grazeSpriteColor = {132, 132, 132}
 
     -- Testing
-    --shield.setShield(10)
+    shield.setShield(10)
     --ActivateSpellButton()
-    --tp.setTP(100)
+    tp.setTP(100)
 end
 
 function Update()
@@ -159,14 +160,6 @@ function Update()
                 spellButtonShadow.Remove()
             end
         end
-    end
-
-    AnimateSlithers()
-    BowllUpdate()
-    if DesertChimeAnim then
-        UpdateKeyframes()
-        ApplyKeyframes()
-        UpdateSplines()
     end
 end
 

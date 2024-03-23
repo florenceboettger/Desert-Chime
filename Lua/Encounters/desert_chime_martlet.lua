@@ -252,12 +252,6 @@ function Update()
     UI.hplabel.absx = 162
     UI.hpbar.background.absx = UI.hplabel.absx + UI.hplabel.width + LabelBarDiff
     UI.hptext.absx = UI.hpbar.background.absx + UI.hpbar.background.xscale + HPBarDiff
-
-    if DesertChimeAnim then
-        UpdateKeyframes()
-        ApplyKeyframes()
-        UpdateSplines()
-    end
 end
 
 function EnteringState(newstate, oldstate)

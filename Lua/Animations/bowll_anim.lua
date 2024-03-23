@@ -217,7 +217,13 @@ local normalStages = {40, 50, 70, 80}
 local gratefulStages = {1, 10, 30, 40}
 local criticalStages = {1, 10, 30, 40}
 
-function BowllUpdate()
+PreBowllUpdate = Update
+
+function Update()
+    if PreBowllUpdate then
+        PreBowllUpdate()
+    end
+    
     if BowllSprites.head["expression"] == "side" then
         BowllSprites.nostrils.MoveTo(2, 0)
     elseif BowllSprites.head["expression"] ~= "transition" then

@@ -134,6 +134,12 @@ InitialKeyframes = {
         xscale = 2,
         yscale = 2
     },
+    maskKintsugi = {
+        x = 0,
+        y = 0,
+        xscale = 0,
+        yscale = 0
+    },
     chimeL = {
         x = -13,
         y = 14,
@@ -299,6 +305,13 @@ Sprites.mask.SetParent(Sprites.jar)
 Sprites.mask.SetPivot(0.5, 0.5)
 Sprites.mask.SetAnchor(17.5 / 36, 28.5 / 37)
 Sprites.mask.MoveTo(0, 0)
+
+Sprites.maskKintsugi = CreateSprite("desert_chime_mask_kintsugi_0")
+Sprites.maskKintsugi.SetParent(Sprites.mask)
+Sprites.maskKintsugi.SetPivot(0.5, 0.5)
+Sprites.maskKintsugi.SetAnchor(0.5, 0.5)
+Sprites.maskKintsugi.MoveTo(0, 0)
+--Sprites.maskKintsugi.alpha = 0
 
 for _, d in ipairs({"L", "R"}) do
     Sprites["chime" .. d] = CreateSprite("desert_chime_chime")
@@ -813,5 +826,18 @@ function UpdateSplines()
         for j = 1, 4 do
             curves[d].movepoint(j, pos[j][1], pos[j][2])
         end
+    end
+end
+
+PreChimeUpdate = Update
+
+function Update()
+    if PreChimeUpdate then
+        PreChimeUpdate()
+    end
+    if DesertChimeAnim then
+        UpdateKeyframes()
+        ApplyKeyframes()
+        UpdateSplines()
     end
 end
