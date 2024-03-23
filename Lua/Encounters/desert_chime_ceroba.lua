@@ -83,7 +83,7 @@ function ActivateSpellButton()
 end
 
 function EncounterStarting()
-    require "Animations/desert_chime_anim"
+    DesertChimeAnimation = require "Animations/desert_chime_anim"
     Sandstorm = require "Animations/sandstorm_anim"
     --require "Animations/sir_slither_anim"
     --SetupSlitherAnimation("sir_slither_esq", 1)

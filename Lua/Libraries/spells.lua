@@ -63,14 +63,14 @@ local function stunSpell(spell, time)
                 if math.abs(relativeTime) < 0.03 then
                     PlaySoundOnceThisFrame("snd_shotstrong")
                     PlaySoundOnceThisFrame("snd_ceroba_trap_2")
-                    Attacked(60)
+                    DesertChimeAnimation.attacked(60)
                 elseif math.abs(relativeTime) < 0.1 then
                     PlaySoundOnceThisFrame("snd_shotmid")
                     PlaySoundOnceThisFrame("snd_ceroba_trap_2")
-                    Attacked(30)
+                    DesertChimeAnimation.attacked(30)
                 else
                     PlaySoundOnceThisFrame("snd_ceroba_trap_2")
-                    Attacked(15)
+                    DesertChimeAnimation.attacked(15)
                 end
             end
         end

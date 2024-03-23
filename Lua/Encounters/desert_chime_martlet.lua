@@ -59,7 +59,7 @@ function EncounterStarting()
 
     LabelBarDiff = UI.hpbar.background.absx - (UI.hplabel.absx + UI.hplabel.width)
     HPBarDiff = UI.hptext.absx - (UI.hpbar.background.absx + UI.hpbar.background.xscale)
-    require "Animations/desert_chime_anim"
+    DesertChimeAnimation = require "Animations/desert_chime_anim"
     Sandstorm = require "Animations/sandstorm_anim"
 
     UI.hpbar.background.color = {0.4, 0.4, 0.4}
@@ -108,6 +108,7 @@ function EncounterStarting()
 
     -- Testing
     --tp.setTP(100)
+    Sandstorm.Hide()
 end
 
 local startMoveTime = -1
@@ -206,7 +207,7 @@ function Update()
                 Mix(startArenaSize.x, endArenaSize.x, interp),
                 Mix(startArenaSize.y, endArenaSize.y, interp)
             )
-            DesertChimeSprite.MoveTo(
+            self.desertChimeSprite.MoveTo(
                 Mix(startMonster.x, endMonster.x, interp),
                 Mix(startMonster.y, endMonster.y, interp)
             )
@@ -221,7 +222,7 @@ function Update()
         else
             Arena.MoveTo(endArenaPos.x, endArenaPos.y, true, true)
             Arena.ResizeImmediate(endArenaSize.x, endArenaSize.y)
-            DesertChimeSprite.MoveTo(endMonster.x, endMonster.y)
+            self.desertChimeSprite.MoveTo(endMonster.x, endMonster.y)
             if circleArena then
                 for i = 1, 8 do
                     arenaCurves[i].cleardraw()
@@ -239,12 +240,12 @@ function Update()
     elseif GetCurrentState() == "POSTWAVEMOVE" then
         if (Time.time - startMoveTime) <= totalMoveTime then
             local interp = easeBezier.ease(.28, .28, .57, 1, (Time.time - startMoveTime) / totalMoveTime)
-            DesertChimeSprite.MoveTo(
+            self.desertChimeSprite.MoveTo(
                 Mix(endMonster.x, startMonster.x, interp),
                 Mix(endMonster.y, startMonster.y, interp)
             )
         else
-            DesertChimeSprite.MoveTo(startMonster.x, startMonster.y)
+            self.desertChimeSprite.MoveTo(startMonster.x, startMonster.y)
             State("ACTIONSELECT")
         end
     end
@@ -261,8 +262,8 @@ function EnteringState(newstate, oldstate)
         endArenaPos = {x = Arena.x - 140, y = Arena.y + 50}
         startArenaSize = {x = Arena.width, y = Arena.height}
         endArenaSize = {x = arenasize[1], y = arenasize[2]}
-        startMonster = {x = DesertChimeSprite.x, y = DesertChimeSprite.y}
-        endMonster = {x = DesertChimeSprite.x + 140, y = DesertChimeSprite.y - 140}
+        startMonster = {x = self.desertChimeSprite.x, y = self.desertChimeSprite.y}
+        endMonster = {x = self.desertChimeSprite.x + 140, y = self.desertChimeSprite.y - 140}
 
         if circleArena then
             local invert = {false, true, true, false, true, false, false, true}

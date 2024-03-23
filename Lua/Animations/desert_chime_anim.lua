@@ -2,7 +2,9 @@ local gas = require 'gas'
 local easeBezier = require 'easeBezier'
 local moreCurves = require "moreCurves"
 
-DesertChimeAnim = true
+local self = {}
+
+self.active = true
 
 local function sign(number)
     if number > 0 then
@@ -56,13 +58,13 @@ local function deepcopy(orig)
     return copy
 end
 
-local startTime = Time.time
+self.startTime = Time.time
 
-function ElapsedTime()
-    return (Time.time - startTime) * wavespeed
+function self.elapsedTime()
+    return (Time.time - self.startTime) * wavespeed
 end
 
-InitialKeyframes = {
+self.initialKeyframes = {
     body = {
         xscale = 2,
         yscale = 2
@@ -137,8 +139,23 @@ InitialKeyframes = {
     maskKintsugi = {
         x = 0,
         y = 0,
-        xscale = 0,
-        yscale = 0
+        xscale = 2,
+        yscale = 2,
+        localRotation = 0
+    },
+    maskKintsugiPattern = {
+        absx = 0,
+        absy = 0,
+        rotation = 0,
+        xscale = 1,
+        yscale = 1,
+    },
+    maskKintsugiPatternStars = {
+        absx = 0,
+        absy = 0,
+        rotation = 0,
+        xscale = 1,
+        yscale = 1,
     },
     chimeL = {
         x = -13,
@@ -197,54 +214,54 @@ InitialKeyframes = {
     }
 }
 
-Keyframes = {}
+self.keyframes = {}
 
-Sprites = {}
+self.sprites = {}
 
 local curves = {}
 
-DesertChimeSprite = CreateSprite("empty")
+self.desertChimeSprite = CreateSprite("empty")
 
-Sprites.body = CreateSprite("desert_chime_body")
-Sprites.body.SetParent(DesertChimeSprite)
-Sprites.body.Scale(2, 2)
-Sprites.body.SetPivot(26 / 53, 4 / 57)
-Sprites.body.alpha = 0
-InitialKeyframes.body.x = Sprites.body.x
-InitialKeyframes.body.y = Sprites.body.y
+self.sprites.body = CreateSprite("desert_chime_body")
+self.sprites.body.SetParent(self.desertChimeSprite)
+self.sprites.body.Scale(2, 2)
+self.sprites.body.SetPivot(26 / 53, 4 / 57)
+self.sprites.body.alpha = 0
+self.initialKeyframes.body.x = self.sprites.body.x
+self.initialKeyframes.body.y = self.sprites.body.y
 
-Sprites.tail = CreateSprite("desert_chime_tail_4")
-Sprites.tail.SetParent(Sprites.body)
-Sprites.tail.Scale(2, 2)
-Sprites.tail.SetPivot(12 / 24, 17 / 19)
-Sprites.tail.SetAnchor(27 / 53, 4 / 57)
-Sprites.tail.MoveTo(0, 0)
+self.sprites.tail = CreateSprite("desert_chime_tail_4")
+self.sprites.tail.SetParent(self.sprites.body)
+self.sprites.tail.Scale(2, 2)
+self.sprites.tail.SetPivot(12 / 24, 17 / 19)
+self.sprites.tail.SetAnchor(27 / 53, 4 / 57)
+self.sprites.tail.MoveTo(0, 0)
 
-Sprites.tailL = CreateSprite("desert_chime_tail_l")
-Sprites.tailL.SetParent(Sprites.tail)
-Sprites.tailL.Scale(2, 2)
-Sprites.tailL.SetPivot(1, 6 / 7)
-Sprites.tailL.SetAnchor(13 / 26, 2 / 19)
-Sprites.tailL.MoveTo(0, 0)
+self.sprites.tailL = CreateSprite("desert_chime_tail_l")
+self.sprites.tailL.SetParent(self.sprites.tail)
+self.sprites.tailL.Scale(2, 2)
+self.sprites.tailL.SetPivot(1, 6 / 7)
+self.sprites.tailL.SetAnchor(13 / 26, 2 / 19)
+self.sprites.tailL.MoveTo(0, 0)
 
-Sprites.tailR = CreateSprite("desert_chime_tail_r")
-Sprites.tailR.SetParent(Sprites.tail)
-Sprites.tailR.Scale(2, 2)
-Sprites.tailR.SetPivot(0, 6 / 7)
-Sprites.tailR.SetAnchor(13 / 26, 2 / 19)
-Sprites.tailR.MoveTo(0, 0)
+self.sprites.tailR = CreateSprite("desert_chime_tail_r")
+self.sprites.tailR.SetParent(self.sprites.tail)
+self.sprites.tailR.Scale(2, 2)
+self.sprites.tailR.SetPivot(0, 6 / 7)
+self.sprites.tailR.SetAnchor(13 / 26, 2 / 19)
+self.sprites.tailR.MoveTo(0, 0)
 
-local bottomPos = Sprites.tailR.absy - Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale - DesertChimeSprite.y
+local bottomPos = self.sprites.tailR.absy - self.sprites.tailR.ypivot * self.sprites.tailR.height * self.sprites.tailR.yscale - self.desertChimeSprite.y
 
-Sprites.bodyClone = CreateSprite("desert_chime_body")
-Sprites.bodyClone.SetParent(Sprites.body)
-Sprites.bodyClone.Scale(2, 2)
-Sprites.bodyClone.SetPivot(26 / 53, 4 / 57)
-Sprites.bodyClone.SetAnchor(26 / 53, 4 / 57)
-Sprites.bodyClone.MoveTo(0, 0)
+self.sprites.bodyClone = CreateSprite("desert_chime_body")
+self.sprites.bodyClone.SetParent(self.sprites.body)
+self.sprites.bodyClone.Scale(2, 2)
+self.sprites.bodyClone.SetPivot(26 / 53, 4 / 57)
+self.sprites.bodyClone.SetAnchor(26 / 53, 4 / 57)
+self.sprites.bodyClone.MoveTo(0, 0)
 
 local floor = CreateSprite("desert_chime_floor")
-floor.SetParent(DesertChimeSprite)
+floor.SetParent(self.desertChimeSprite)
 floor.Scale(2, 2)
 floor.MoveTo(0, bottomPos)
 
@@ -254,89 +271,105 @@ for _, d in ipairs({"L", "R"}) do
         xscale = -2
     end
 
-    Sprites["arm" .. d] = CreateSprite("desert_chime_arm")
-    Sprites["arm" .. d].SetParent(Sprites.body)
-    Sprites["arm" .. d].Scale(xscale, 2)
-    Sprites["arm" .. d].SetPivot(1 / 23, 27 / 31)
-    Sprites["arm" .. d].SetAnchor(47 / 53, 31 / 57)
-    Sprites["arm" .. d].MoveTo(0, 0)
+    self.sprites["arm" .. d] = CreateSprite("desert_chime_arm")
+    self.sprites["arm" .. d].SetParent(self.sprites.body)
+    self.sprites["arm" .. d].Scale(xscale, 2)
+    self.sprites["arm" .. d].SetPivot(1 / 23, 27 / 31)
+    self.sprites["arm" .. d].SetAnchor(47 / 53, 31 / 57)
+    self.sprites["arm" .. d].MoveTo(0, 0)
 
-    Sprites["armThing" .. d] = CreateSprite("desert_chime_arm_thing")
-    Sprites["armThing" .. d].SetParent(Sprites["arm" .. d])
-    Sprites["armThing" .. d].Scale(xscale, 2)
-    Sprites["armThing" .. d].SetPivot(8 / 17, 9 / 19)
-    Sprites["armThing" .. d].SetAnchor(17 / 23, 7 / 31)
-    Sprites["armThing" .. d].MoveTo(0, 0)
+    self.sprites["armThing" .. d] = CreateSprite("desert_chime_arm_thing")
+    self.sprites["armThing" .. d].SetParent(self.sprites["arm" .. d])
+    self.sprites["armThing" .. d].Scale(xscale, 2)
+    self.sprites["armThing" .. d].SetPivot(8 / 17, 9 / 19)
+    self.sprites["armThing" .. d].SetAnchor(17 / 23, 7 / 31)
+    self.sprites["armThing" .. d].MoveTo(0, 0)
 
-    Sprites["clawOuter" .. d] = CreateSprite("desert_chime_claw_outer")
-    Sprites["clawOuter" .. d].SetParent(Sprites["armThing" .. d])
-    Sprites["clawOuter" .. d].Scale(xscale, 2)
-    Sprites["clawOuter" .. d].SetPivot(1 / 13, 4 / 14)
-    Sprites["clawOuter" .. d].SetAnchor(16 / 17, 13 / 19)
-    Sprites["clawOuter" .. d].MoveTo(0, 0)
+    self.sprites["clawOuter" .. d] = CreateSprite("desert_chime_claw_outer")
+    self.sprites["clawOuter" .. d].SetParent(self.sprites["armThing" .. d])
+    self.sprites["clawOuter" .. d].Scale(xscale, 2)
+    self.sprites["clawOuter" .. d].SetPivot(1 / 13, 4 / 14)
+    self.sprites["clawOuter" .. d].SetAnchor(16 / 17, 13 / 19)
+    self.sprites["clawOuter" .. d].MoveTo(0, 0)
 
-    Sprites["clawInner" .. d] = CreateSprite("desert_chime_claw_inner")
-    Sprites["clawInner" .. d].SetParent(Sprites["armThing" .. d])
-    Sprites["clawInner" .. d].Scale(xscale, 2)
-    Sprites["clawInner" .. d].SetPivot(5 / 14, 2 / 15)
-    Sprites["clawInner" .. d].SetAnchor(8 / 17, 18 / 19)
-    Sprites["clawInner" .. d].MoveTo(0, 0)
+    self.sprites["clawInner" .. d] = CreateSprite("desert_chime_claw_inner")
+    self.sprites["clawInner" .. d].SetParent(self.sprites["armThing" .. d])
+    self.sprites["clawInner" .. d].Scale(xscale, 2)
+    self.sprites["clawInner" .. d].SetPivot(5 / 14, 2 / 15)
+    self.sprites["clawInner" .. d].SetAnchor(8 / 17, 18 / 19)
+    self.sprites["clawInner" .. d].MoveTo(0, 0)
 
-    Sprites["armThing" .. d .. "Clone"] = CreateSprite("desert_chime_arm_thing")
-    Sprites["armThing" .. d .. "Clone"].SetParent(Sprites["armThing" .. d])
-    Sprites["armThing" .. d .. "Clone"].Scale(xscale, 2)
-    Sprites["armThing" .. d .. "Clone"].SetPivot(8 / 17, 10 / 19)
-    Sprites["armThing" .. d .. "Clone"].SetAnchor(8 / 17, 10 / 19)
-    Sprites["armThing" .. d .. "Clone"].MoveTo(0, 0)
+    self.sprites["armThing" .. d .. "Clone"] = CreateSprite("desert_chime_arm_thing")
+    self.sprites["armThing" .. d .. "Clone"].SetParent(self.sprites["armThing" .. d])
+    self.sprites["armThing" .. d .. "Clone"].Scale(xscale, 2)
+    self.sprites["armThing" .. d .. "Clone"].SetPivot(8 / 17, 10 / 19)
+    self.sprites["armThing" .. d .. "Clone"].SetAnchor(8 / 17, 10 / 19)
+    self.sprites["armThing" .. d .. "Clone"].MoveTo(0, 0)
 end
 
 
-Sprites.armL.SetAnchor(9 / 53, 31 / 57)
-Sprites.armL.SendToBottom()
+self.sprites.armL.SetAnchor(9 / 53, 31 / 57)
+self.sprites.armL.SendToBottom()
 
-Sprites.jar = enemies[1]["monstersprite"]
-Sprites.jar.SetPivot(0.5, 0)
-Sprites.jar.SetParent(Sprites.body)
-Sprites.jar.SetAnchor(27 / 53, 52 / 57)
-Sprites.jar.MoveTo(0, 0)
+self.sprites.jar = enemies[1]["monstersprite"]
+self.sprites.jar.SetPivot(0.5, 0)
+self.sprites.jar.SetParent(self.sprites.body)
+self.sprites.jar.SetAnchor(27 / 53, 52 / 57)
+self.sprites.jar.MoveTo(0, 0)
 
-Sprites.mask = CreateSprite("desert_chime_mask")
-Sprites.mask.SetParent(Sprites.jar)
-Sprites.mask.SetPivot(0.5, 0.5)
-Sprites.mask.SetAnchor(17.5 / 36, 28.5 / 37)
-Sprites.mask.MoveTo(0, 0)
+self.sprites.mask = CreateSprite("desert_chime_mask")
+self.sprites.mask.SetParent(self.sprites.jar)
+self.sprites.mask.SetPivot(0.5, 0.5)
+self.sprites.mask.SetAnchor(17.5 / 36, 28.5 / 37)
+self.sprites.mask.MoveTo(0, 0)
 
-Sprites.maskKintsugi = CreateSprite("desert_chime_mask_kintsugi_0")
-Sprites.maskKintsugi.SetParent(Sprites.mask)
-Sprites.maskKintsugi.SetPivot(0.5, 0.5)
-Sprites.maskKintsugi.SetAnchor(0.5, 0.5)
-Sprites.maskKintsugi.MoveTo(0, 0)
---Sprites.maskKintsugi.alpha = 0
+self.sprites.maskKintsugi = CreateSprite("desert_chime_mask_kintsugi_14")
+self.sprites.maskKintsugi.SetParent(self.sprites.mask)
+self.sprites.maskKintsugi.MoveTo(0, 0)
+self.sprites.maskKintsugi.Mask("stencil")
+self.sprites.maskKintsugi["animationFrames"] = {}
+for i = 0, 14 do
+    table.insert(self.sprites.maskKintsugi["animationFrames"], "desert_chime_mask_kintsugi_" .. i)
+end
+
+self.sprites.maskKintsugi["activateAnimation"] = function()
+    self.keyframes.maskKintsugi.alpha = 1
+    self.sprites.maskKintsugi.alpha = 1
+    self.sprites.maskKintsugi.loopmode = "ONESHOT"
+    self.sprites.maskKintsugi.SetAnimation(self.sprites.maskKintsugi["animationFrames"], .12)
+end
+self.sprites.maskKintsugi.alpha = 0
+
+self.sprites.maskKintsugiPattern = CreateSprite("desert_chime_kintsugi_pattern")
+self.sprites.maskKintsugiPattern.SetParent(self.sprites.maskKintsugi)
+
+self.sprites.maskKintsugiPatternStars = CreateSprite("desert_chime_kintsugi_pattern_stars")
+self.sprites.maskKintsugiPatternStars.SetParent(self.sprites.maskKintsugi)
 
 for _, d in ipairs({"L", "R"}) do
-    Sprites["chime" .. d] = CreateSprite("desert_chime_chime")
-    Sprites["chime" .. d].SetParent(Sprites.jar)
-    Sprites["chime" .. d].SendToBottom()
+    self.sprites["chime" .. d] = CreateSprite("desert_chime_chime")
+    self.sprites["chime" .. d].SetParent(self.sprites.jar)
+    self.sprites["chime" .. d].SendToBottom()
 
-    Sprites["maskChime" .. d] = CreateSprite("desert_chime_chime")
-    Sprites["maskChime" .. d].SetParent(Sprites.mask)
+    self.sprites["maskChime" .. d] = CreateSprite("desert_chime_chime")
+    self.sprites["maskChime" .. d].SetParent(self.sprites.mask)
 
-    Sprites["snakeHead" .. d] = CreateSprite("snake_head")
-    Sprites["snakeHead" .. d].SetParent(Sprites.mask)
-    Sprites["snakeHead" .. d].SetPivot(0.5, 1)
+    self.sprites["snakeHead" .. d] = CreateSprite("snake_head")
+    self.sprites["snakeHead" .. d].SetParent(self.sprites.mask)
+    self.sprites["snakeHead" .. d].SetPivot(0.5, 1)
 
-    Sprites["snakeTail" .. d] = CreateSprite("snake_tail")
-    Sprites["snakeTail" .. d].SetParent(Sprites.jar)
-    Sprites["snakeTail" .. d].SetPivot(0.5, 1)
+    self.sprites["snakeTail" .. d] = CreateSprite("snake_tail")
+    self.sprites["snakeTail" .. d].SetParent(self.sprites.jar)
+    self.sprites["snakeTail" .. d].SetPivot(0.5, 1)
 
     curves[d] = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
-    curves[d].show(16, {1, 1, 1}, Sprites.jar, 8, "snake_body", true)
+    curves[d].show(16, {1, 1, 1}, self.sprites.jar, 8, "snake_body", true)
 end
 
-Sprites.mask.SendToTop()
+self.sprites.mask.SendToTop()
 
-for name, spr in pairs(Sprites) do
-    local kf = InitialKeyframes[name]
+for name, spr in pairs(self.sprites) do
+    local kf = self.initialKeyframes[name]
 
     -- have to do it this way bc ["x"] etc do not work for sprites
     if kf.x then
@@ -349,10 +382,19 @@ for name, spr in pairs(Sprites) do
     else
         kf.y = spr.y
     end
+    if kf.absx then
+        spr.absx = kf.absx
+    end
+    if kf.absy then
+        spr.absy = kf.absy
+    end
     if kf.rotation then
         spr.rotation = kf.rotation
     else
         kf.rotation = spr.rotation
+    end
+    if kf.localRotation then
+        spr.localRotation = kf.localRotation
     end
     if kf.xscale then
         spr.xscale = kf.xscale
@@ -376,7 +418,7 @@ for name, spr in pairs(Sprites) do
     end
 end
 
-Keyframes = deepcopy(InitialKeyframes)
+self.keyframes = deepcopy(self.initialKeyframes)
 
 local function alternateMoveRest(t, active, rest)
     local modT = t % (2 * (active + rest))
@@ -403,18 +445,18 @@ end
 local maskMoveCurve = gas.curve(0, 0, 0, 0, 0, 0, 0, 0)
 -- possible values: IDLE, ATTACKED, DEFENDING
 SetGlobal("AnimState", "IDLE")
-local attackIntensity = 0
-local prevState = GetGlobal("AnimState")
-local defaultState = prevState
-local animStart = Time.time
+self.attackIntensity = 0
+self.prevState = GetGlobal("AnimState")
+self.defaultState = self.prevState
+self.animStart = Time.time
 
 local attackedDuration = 1.5
 
 local function moveMaskIdle(animTime)
     if wavespeed < 1 then
         animTime = animTime * wavespeed
-        Keyframes.body.x = Keyframes.body.x + math.random(-1, 1)
-        Keyframes.body.y = Keyframes.body.y + math.random(-1, 1)
+        self.keyframes.body.x = self.keyframes.body.x + math.random(-1, 1)
+        self.keyframes.body.y = self.keyframes.body.y + math.random(-1, 1)
     end
     local x, desc = alternateMoveRest(animTime, 3, 4)
     if desc then x = 1 - x end
@@ -432,11 +474,11 @@ local function moveMaskIdle(animTime)
 
     local rotationShiver = shiver(3, 4, 10 * mix(math.max(0, maskDistT), 1, 0.2), animTime % 3)
 
-    Keyframes.mask.x, Keyframes.mask.y = maskMoveCurve.getpos(maskDistT)
-    Keyframes.mask.rotation = InitialKeyframes.mask.rotation + rotationShiver
+    self.keyframes.mask.x, self.keyframes.mask.y = maskMoveCurve.getpos(maskDistT)
+    self.keyframes.mask.rotation = self.initialKeyframes.mask.rotation + rotationShiver
 
-    Keyframes.snakeHeadL.rotation = InitialKeyframes.snakeHeadL.rotation - 60 * maskDistT + 5 * math.sin(animTime)
-    Keyframes.snakeHeadR.rotation = InitialKeyframes.snakeHeadR.rotation - 60 * maskDistT + 5 * math.sin(animTime + math.pi/2)
+    self.keyframes.snakeHeadL.rotation = self.initialKeyframes.snakeHeadL.rotation - 60 * maskDistT + 5 * math.sin(animTime)
+    self.keyframes.snakeHeadR.rotation = self.initialKeyframes.snakeHeadR.rotation - 60 * maskDistT + 5 * math.sin(animTime + math.pi/2)
 end
 
 local function animateBells(animTime)
@@ -447,7 +489,7 @@ local function animateBells(animTime)
         maskChimeR = math.pi / 2
     }
     for _, d in ipairs({"chimeL", "chimeR", "maskChimeL", "maskChimeR"}) do
-        Keyframes[d].rotation = InitialKeyframes[d].rotation + math.sin(animTime + offsets[d]) * 30
+        self.keyframes[d].rotation = self.initialKeyframes[d].rotation + math.sin(animTime + offsets[d]) * 30
     end
 end
 
@@ -459,27 +501,27 @@ for _, d in ipairs({-1, 1}) do
     dustAnim[d].alpha = 0
     dustAnim[d].SetPivot(0, 0)
     dustAnim[d].Scale(2 * d, 2)
-    dustAnim[d].SetParent(DesertChimeSprite)
+    dustAnim[d].SetParent(self.desertChimeSprite)
 end
 
 local function animateBody(animTime)
-    Keyframes.body.x = InitialKeyframes.body.x - 4 * sinEsqueWave(.3, .21, 2.5, animTime)
+    self.keyframes.body.x = self.initialKeyframes.body.x - 4 * sinEsqueWave(.3, .21, 2.5, animTime)
     local yOffset = -2 + 2 * sinEsqueWave(.15, .5, 2.0, animTime)
-    Keyframes.body.y = InitialKeyframes.body.y + yOffset
-    Keyframes.body.rotation = InitialKeyframes.body.rotation - 0.7 * Keyframes.body.x
+    self.keyframes.body.y = self.initialKeyframes.body.y + yOffset
+    self.keyframes.body.rotation = self.initialKeyframes.body.rotation - 0.7 * self.keyframes.body.x
 
-    Keyframes.tail.x = InitialKeyframes.tail.x - 3 * sinEsqueWave(.15, .2, 2.0, animTime)
-    Keyframes.tail.y = InitialKeyframes.tail.y - yOffset
+    self.keyframes.tail.x = self.initialKeyframes.tail.x - 3 * sinEsqueWave(.15, .2, 2.0, animTime)
+    self.keyframes.tail.y = self.initialKeyframes.tail.y - yOffset
 
     local tailRotPeriod = 1.0
-    Keyframes.tail.rotation = InitialKeyframes.tail.rotation + 12 * sinEsqueWave(.2, .5, tailRotPeriod, animTime)
+    self.keyframes.tail.rotation = self.initialKeyframes.tail.rotation + 12 * sinEsqueWave(.2, .5, tailRotPeriod, animTime)
 
-    if Keyframes.tail.rotation > 0 then
-        Sprites.tailL.Set("desert_chime_tail_l_cut")
-        Sprites.tailR.Set("desert_chime_tail_r")
+    if self.keyframes.tail.rotation > 0 then
+        self.sprites.tailL.Set("desert_chime_tail_l_cut")
+        self.sprites.tailR.Set("desert_chime_tail_r")
     else
-        Sprites.tailL.Set("desert_chime_tail_l")
-        Sprites.tailR.Set("desert_chime_tail_r_cut")
+        self.sprites.tailL.Set("desert_chime_tail_l")
+        self.sprites.tailR.Set("desert_chime_tail_r_cut")
     end
 
     if animTime % tailRotPeriod >= tailRotPeriod/2 * 0.75 and animTime % tailRotPeriod < tailRotPeriod/2 * 0.75 + Time.dt * wavespeed * 1.5 then
@@ -495,19 +537,19 @@ local function animateBody(animTime)
         }, 0.125)
         dust.loopmode = "ONESHOTEMPTY"
 
-        local tailBottom = Sprites.tail.absx - DesertChimeSprite.absx + math.sin(math.rad(Keyframes.tail.rotation)) * Sprites.tail.width * Keyframes.tail.xscale * Sprites.tail.xpivot
+        local tailBottom = self.sprites.tail.absx - self.desertChimeSprite.absx + math.sin(math.rad(self.keyframes.tail.rotation)) * self.sprites.tail.width * self.keyframes.tail.xscale * self.sprites.tail.xpivot
         dust.MoveTo(tailBottom + sign(direction) * 28, bottomPos)
     end
 end
 
 local function animateArms(animTime)
     local armRotation = sinEsqueWave(.15, .45, 4, animTime)
-    Keyframes.armL.rotation = InitialKeyframes.armL.rotation + 15 * armRotation
-    Keyframes.armR.rotation = InitialKeyframes.armR.rotation + 15 * armRotation
+    self.keyframes.armL.rotation = self.initialKeyframes.armL.rotation + 15 * armRotation
+    self.keyframes.armR.rotation = self.initialKeyframes.armR.rotation + 15 * armRotation
 
     local armYScale = sinEsqueWave(.35, .5, 2, animTime)
-    Keyframes.armL.yscale = InitialKeyframes.armL.yscale * (1 + 0.2 * armYScale)
-    Keyframes.armR.yscale = InitialKeyframes.armR.yscale * (1 + 0.2 * armYScale)
+    self.keyframes.armL.yscale = self.initialKeyframes.armL.yscale * (1 + 0.2 * armYScale)
+    self.keyframes.armR.yscale = self.initialKeyframes.armR.yscale * (1 + 0.2 * armYScale)
 
     local x, desc = alternateMoveRest(animTime, 0.75, 4)
     if desc then x = 1 - x end
@@ -518,9 +560,9 @@ local function animateArms(animTime)
 
     local armThingRotation = 10 * sinEsqueWave(.4, .4, 3, animTime)
     for _, d in ipairs({"L", "R"}) do
-        Keyframes["armThing" .. d].rotation = InitialKeyframes["armThing" .. d].rotation + armThingRotation
-        Keyframes["clawOuter" .. d].rotation = InitialKeyframes["clawOuter" .. d].rotation + armThingRotation + pinchAngle
-        Keyframes["clawInner" .. d].rotation = InitialKeyframes["clawInner" .. d].rotation + armThingRotation - pinchAngle
+        self.keyframes["armThing" .. d].rotation = self.initialKeyframes["armThing" .. d].rotation + armThingRotation
+        self.keyframes["clawOuter" .. d].rotation = self.initialKeyframes["clawOuter" .. d].rotation + armThingRotation + pinchAngle
+        self.keyframes["clawInner" .. d].rotation = self.initialKeyframes["clawInner" .. d].rotation + armThingRotation - pinchAngle
     end
 end
 
@@ -528,31 +570,31 @@ local sandSpeed = 40
 local sandHeight = 16
 local sandEmitData = {
     bodyR = {
-        parent = Sprites.body,
+        parent = self.sprites.body,
         anchor = {x = 40.5 / 53, y = 5 / 57},
         pile = true,
     },
     bodyL = {
-        parent = Sprites.body,
+        parent = self.sprites.body,
         anchor = {x = 12.5 / 53, y = 5 / 57},
         pile = true,
     },
     armR = {
-        parent = Sprites.armThingR,
+        parent = self.sprites.armThingR,
         anchor = {x = 9.5 / 17, y = 3 / 19},
         pile = false,
         vanishHeight = 15,
         vanishDistance = 15,
     },
     armL = {
-        parent = Sprites.armThingL,
+        parent = self.sprites.armThingL,
         anchor = {x = 9.5 / 17, y = 3 / 19},
         pile = false,
         vanishHeight = 15,
         vanishDistance = 15,
     },
     jar = {
-        parent = Sprites.jar,
+        parent = self.sprites.jar,
         anchor = {x = 29.5 / 36, y = 10 / 36},
         pile = false,
         vanishHeight = 140,
@@ -561,7 +603,7 @@ local sandEmitData = {
 }
 
 local sandSprites = CreateSprite("empty")
-sandSprites.SetParent(DesertChimeSprite)
+sandSprites.SetParent(self.desertChimeSprite)
 sandSprites.MoveTo(0, 0)
 sandSprites.SendToBottom()
 
@@ -597,7 +639,7 @@ local function generateSand(v)
     return spr
 end
 
-DesertChimeSprite.y = 276
+self.desertChimeSprite.y = 276
 
 for _, v in pairs(sandEmitData) do
     v.sands = {}
@@ -642,7 +684,7 @@ for _, v in pairs(sandEmitData) do
     end
 end
 
-local function animateSand(animTime)
+local function animateSand()
 
     for _, v in pairs(sandEmitData) do
         for i = #v.sands, 1, -1 do
@@ -696,62 +738,68 @@ local function animateSand(animTime)
     end
 end
 
-function Attacked(intensity)
+function self.attacked(intensity)
     SetGlobal("AnimState", "ATTACKED")
-    attackIntensity = intensity
-    animStart = Time.time
+    self.attackIntensity = intensity
+    self.animStart = Time.time
 end
 
-function UpdateKeyframes()
-    animateBells(ElapsedTime())
-    animateBody(ElapsedTime())
-    animateArms(ElapsedTime())
-    animateSand(ElapsedTime())
+function self.updateKeyframes()
+    animateBells(self.elapsedTime())
+    animateBody(self.elapsedTime())
+    animateArms(self.elapsedTime())
+    animateSand()
 
-    if GetGlobal("AnimState") ~= prevState then
-        animStart = Time.time
-        prevState = GetGlobal("AnimState")
-        defaultState = prevState
+    if GetGlobal("AnimState") ~= self.prevState then
+        self.animStart = Time.time
+        self.prevState = GetGlobal("AnimState")
+        self.defaultState = self.prevState
     end
-    local animTime = Time.time - animStart
+    local animTime = Time.time - self.animStart
+
+    self.keyframes.maskKintsugiPattern.absx = (self.keyframes.maskKintsugiPattern.absx + 10 * Time.dt) % 640
+    self.keyframes.maskKintsugiPattern.absy = (self.keyframes.maskKintsugiPattern.absy + 7 * Time.dt) % 480
+    
+    self.keyframes.maskKintsugiPatternStars.absx = (self.keyframes.maskKintsugiPattern.absx + 6 * Time.dt) % 640
+    self.keyframes.maskKintsugiPatternStars.absy = (self.keyframes.maskKintsugiPattern.absy + 4 * Time.dt) % 480
 
     if GetGlobal("AnimState") == "DEFENDING" then
-        Keyframes.mask.x = 0
-        Keyframes.mask.y = 0
-        Keyframes.mask.rotation = InitialKeyframes.mask.rotation
+        self.keyframes.mask.x = 0
+        self.keyframes.mask.y = 0
+        self.keyframes.mask.rotation = self.initialKeyframes.mask.rotation
 
-        Keyframes.snakeHeadL.rotation = InitialKeyframes.snakeHeadL.rotation
-        Keyframes.snakeHeadR.rotation = InitialKeyframes.snakeHeadR.rotation
+        self.keyframes.snakeHeadL.rotation = self.initialKeyframes.snakeHeadL.rotation
+        self.keyframes.snakeHeadR.rotation = self.initialKeyframes.snakeHeadR.rotation
     else
         if GetGlobal("AnimState") == "IDLE" then
             moveMaskIdle(animTime)
         elseif GetGlobal("AnimState") == "ATTACKED" then
-            local movementShiver = shiver(1, 4, attackIntensity, animTime)
-            Keyframes.mask.x = movementShiver
-            Keyframes.mask.y = 0
+            local movementShiver = shiver(1, 4, self.attackIntensity, animTime)
+            self.keyframes.mask.x = movementShiver
+            self.keyframes.mask.y = 0
 
             local rotationShiver = shiver(2, 5, 6, animTime)
 
-            Keyframes.mask.rotation = InitialKeyframes.mask.rotation + rotationShiver
+            self.keyframes.mask.rotation = self.initialKeyframes.mask.rotation + rotationShiver
 
-            Keyframes.snakeHeadL.rotation = InitialKeyframes.snakeHeadL.rotation
-            Keyframes.snakeHeadR.rotation = InitialKeyframes.snakeHeadR.rotation
+            self.keyframes.snakeHeadL.rotation = self.initialKeyframes.snakeHeadL.rotation
+            self.keyframes.snakeHeadR.rotation = self.initialKeyframes.snakeHeadR.rotation
 
             if animTime >= attackedDuration then
-                SetGlobal("AnimState", defaultState)
+                SetGlobal("AnimState", self.defaultState)
             end
         end
     end
 end
 
-function ApplyKeyframes()
+function self.applyKeyframes()
     for _, attr in ipairs({"xscale", "yscale", "rotation"}) do
-        Keyframes.bodyClone[attr] = Keyframes.body[attr]
-        Keyframes.armThingLClone[attr] = Keyframes.armThingL[attr]
-        Keyframes.armThingRClone[attr] = Keyframes.armThingR[attr]
+        self.keyframes.bodyClone[attr] = self.keyframes.body[attr]
+        self.keyframes.armThingLClone[attr] = self.keyframes.armThingL[attr]
+        self.keyframes.armThingRClone[attr] = self.keyframes.armThingR[attr]
     end
-    for name, spr in pairs(Sprites) do
-        local kf = Keyframes[name]
+    for name, spr in pairs(self.sprites) do
+        local kf = self.keyframes[name]
 
         if kf.x then
             spr.x = easeDynamic(spr.x, kf.x, 20)
@@ -759,8 +807,17 @@ function ApplyKeyframes()
         if kf.y then
             spr.y = easeDynamic(spr.y, kf.y, 20)
         end
+        if kf.absx then
+            spr.absx = kf.absx
+        end
+        if kf.absy then
+            spr.absy = kf.absy
+        end
         if kf.rotation then
             spr.rotation = easeDynamicRotation(spr.rotation, kf.rotation, 10)
+        end
+        if kf.localRotation then
+            spr.localRotation = easeDynamicRotation(spr.localRotation, kf.localRotation, 10)
         end
         if kf.xscale then
             spr.xscale = easeDynamic(spr.xscale, kf.xscale, .05)
@@ -781,7 +838,7 @@ function ApplyKeyframes()
     end
 
     for _, d in ipairs({"L", "R"}) do
-        Sprites["tail" .. d].absy = DesertChimeSprite.y + bottomPos + Sprites.tailR.ypivot * Sprites.tailR.height * Sprites.tailR.yscale
+        self.sprites["tail" .. d].absy = self.desertChimeSprite.y + bottomPos + self.sprites.tailR.ypivot * self.sprites.tailR.height * self.sprites.tailR.yscale
     end
 
     if enemies[1] ~= nil and enemies[1]["bubblesprite"] ~= nil then
@@ -789,12 +846,12 @@ function ApplyKeyframes()
     end
 end
 
-function UpdateSplines()
+function self.updateSplines()
     for _, d in ipairs({"L", "R"}) do
         local pos = {}
-        local pos1Start = {Sprites["snakeTail" .. d].absx, Sprites["snakeTail" .. d].absy}
-        local pos1Rotation = Sprites["snakeTail" .. d].rotation * sign(Sprites["snakeTail" .. d].xscale) * sign(Sprites["snakeTail" .. d].yscale)
-        local pos1Offset = Sprites["snakeTail" .. d].height
+        local pos1Start = {self.sprites["snakeTail" .. d].absx, self.sprites["snakeTail" .. d].absy}
+        local pos1Rotation = self.sprites["snakeTail" .. d].rotation * sign(self.sprites["snakeTail" .. d].xscale) * sign(self.sprites["snakeTail" .. d].yscale)
+        local pos1Offset = self.sprites["snakeTail" .. d].height
 
         pos[1] = {
             pos1Start[1] + math.sin(math.rad(pos1Rotation)) * pos1Offset,
@@ -808,9 +865,9 @@ function UpdateSplines()
             pos[1][2] - math.cos(math.rad(pos1Rotation)) * startOffset
         }
 
-        local pos3Start = {Sprites["snakeHead" .. d].absx, Sprites["snakeHead" .. d].absy}
-        local pos3Rotation = Sprites["snakeHead" .. d].rotation * sign(Sprites["snakeHead" .. d].xscale) * sign(Sprites["snakeHead" .. d].yscale)
-        local pos3Offset = Sprites["snakeHead" .. d].height
+        local pos3Start = {self.sprites["snakeHead" .. d].absx, self.sprites["snakeHead" .. d].absy}
+        local pos3Rotation = self.sprites["snakeHead" .. d].rotation * sign(self.sprites["snakeHead" .. d].xscale) * sign(self.sprites["snakeHead" .. d].yscale)
+        local pos3Offset = self.sprites["snakeHead" .. d].height
         pos[3] = {
             pos3Start[1] + math.sin(math.rad(pos3Rotation)) * pos3Offset,
             pos3Start[2] - math.cos(math.rad(pos3Rotation)) * pos3Offset
@@ -829,15 +886,21 @@ function UpdateSplines()
     end
 end
 
-PreChimeUpdate = Update
+self.preChimeUpdate = Update
 
 function Update()
-    if PreChimeUpdate then
-        PreChimeUpdate()
+    if self.preChimeUpdate then
+        self.preChimeUpdate()
     end
-    if DesertChimeAnim then
-        UpdateKeyframes()
-        ApplyKeyframes()
-        UpdateSplines()
+    if self.active then
+        self.updateKeyframes()
+        self.applyKeyframes()
+        self.updateSplines()
+
+        if Input.GetKey("Mouse1") == 1 then
+            self.sprites.maskKintsugi["activateAnimation"]()
+        end
     end
 end
+
+return self
