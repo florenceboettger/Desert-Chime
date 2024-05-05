@@ -1,11 +1,17 @@
+local rc = require "RotationalCollision"
+local onHit = require "yellowShotOnHit"
+-- enemy bullet interaction from yellowSoul.lua by Litenek
+
 local self = {}
 
 self.shots = {}
+self.hitSprites = {}
+self.targetProjectiles = {}
 
 self.shootSprite = CreateSprite("spr_heart_yellow_shoot_0")
 self.shootSprite.SetParent(Player.sprite)
-self.shootSprite.SetPivot(0.5, 6/14)
-self.shootSprite.SetAnchor(0.5, 1)
+self.shootSprite.SetPivot(0.5, 8/14)
+self.shootSprite.SetAnchor(0.5, 0)
 self.shootSprite.MoveTo(0, 0)
 self.shootSprite.localRotation = 0
 self.shootSprite.alpha = 0
@@ -49,18 +55,18 @@ function self.createShot()
     }, 1/30)
     spr.loopmode = "ONESHOT"
     spr.Scale(2, 2)
-    spr.SetPivot(0.5, 0)
-    spr.SetAnchor(0.5, 6/14)
+    spr.SetPivot(0.5, 1)
+    spr.SetAnchor(0.5, 8/14)
     spr.SetParent(self.shootSprite)
     spr.localRotation = 0
     spr.MoveTo(0, 0)
-    spr["xspeed"] = math.sin(-spr.rotation / 180 * math.pi) * 300
-    spr["yspeed"] = math.cos(-spr.rotation / 180 * math.pi) * 300
+    spr["xspeed"] = math.sin(spr.rotation / 180 * math.pi) * 300
+    spr["yspeed"] = math.cos(spr.rotation / 180 * math.pi) * 300
     spr["xacc"] = 10
     spr["yacc"] = -200
     spr["bigshot"] = false
 
-    spr.layer = "BelowBullet"
+    spr.layer = "Top"
 
     table.insert(self.shots, spr)
 end
@@ -76,21 +82,48 @@ function self.createBigShot()
         "spr_yheart_bigshot_3",
     }, 0.12)
     spr.Scale(2, 0.1)
-    spr.SetPivot(0.5, 0)
-    spr.SetAnchor(0.5, 6/14)
+    spr.SetPivot(0.5, 1)
+    spr.SetAnchor(0.5, 8/14)
     spr.SetParent(self.shootSprite)
     spr.localRotation = 0
     spr.alpha = 0.5
     spr.MoveTo(0, 0)
-    spr["xspeed"] = math.sin(-spr.rotation / 180 * math.pi) * 360
-    spr["yspeed"] = math.cos(-spr.rotation / 180 * math.pi) * 360
+    spr["xspeed"] = math.sin(spr.rotation / 180 * math.pi) * 360
+    spr["yspeed"] = math.cos(spr.rotation / 180 * math.pi) * 360
     spr["xacc"] = 20
     spr["yacc"] = -100
     spr["bigshot"] = true
 
-    spr.layer = "BelowBullet"
+    spr.layer = "Top"
 
     table.insert(self.shots, spr)
+end
+
+function self.onCollision(enemybullet, shot)
+    if shot["bigshot"] then
+        
+    else
+        local hitSprite = CreateSprite("spr_yheart_shot_hit_0")
+        hitSprite.SetAnimation({
+            "spr_yheart_shot_hit_0",
+            "spr_yheart_shot_hit_1",
+            "spr_yheart_shot_hit_2",
+            "spr_yheart_shot_hit_3"
+        }, 1/30)
+        hitSprite.loopmode = "ONESHOTEMPTY"
+        hitSprite.Scale(2, 2)
+        hitSprite.SetPivot(0.5, 25 / 17)
+        hitSprite.SetAnchor(0.5, 1)
+        hitSprite.SetParent(shot)
+        hitSprite.localRotation = 0
+        hitSprite.MoveTo(0, 0)
+        hitSprite.layer = "Top"
+
+        table.insert(self.hitSprites, hitSprite)
+
+        shot.Remove()
+        onHit(enemybullet)
+    end
 end
 
 PostYellowShotUpdate = Update
@@ -188,25 +221,37 @@ function Update()
     end
     for i = #self.shots, 1, -1 do
         local spr = self.shots[i]
+
+        if not spr.isactive then
+            table.remove(self.shots, i)
+            break
+        end
         if GetCurrentState() ~= "DEFENDING" then
             spr.alpha = spr.alpha - 3 * Time.dt
         end
         spr["xspeed"] = spr["xspeed"] + Time.dt * spr["xacc"]
         spr["yspeed"] = spr["yspeed"] + Time.dt * spr["yacc"]
         spr.Move(spr["xspeed"] * Time.dt, spr["yspeed"] * Time.dt)
-        if spr.x > 640 + 30 or spr.y < 30 or spr.alpha <= 0 then
+        if spr.x < -30 or spr.x > 640 + 30 or spr.y < -30 or spr.y > 480 + 30 or spr.alpha <= 0 then
             spr.Remove()
             table.remove(self.shots, i)
         else
-            spr.rotation = -math.atan2(spr["xspeed"], spr["yspeed"]) * 180 / math.pi
+            spr.rotation = math.atan2(spr["xspeed"], -spr["yspeed"]) * 180 / math.pi
 
             if not spr["bigshot"] and spr.animcomplete and spr.yscale < 4 then
-                spr.yscale = math.min(4, spr.yscale + 6 * Time.dt)
+                --spr.yscale = math.min(4, spr.yscale + 6 * Time.dt)
             end
             if spr["bigshot"] then
                 spr.alpha = spr.alpha + 3 * Time.dt
                 spr.yscale = math.min(1, spr.yscale + 3 * Time.dt)
                 spr.xscale = math.max(1, spr.xscale - 3 * Time.dt)
+            end
+
+            for j = #self.targetProjectiles, 1, -1 do
+                local target = self.targetProjectiles[j]
+                if target.isactive and rc.collide(target, {sprite = spr}) then
+                    self.onCollision(target, spr)
+                end
             end
         end
     end

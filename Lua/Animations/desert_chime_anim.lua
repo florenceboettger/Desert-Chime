@@ -147,15 +147,15 @@ self.initialKeyframes = {
         absx = 0,
         absy = 0,
         rotation = 0,
-        xscale = 1,
-        yscale = 1,
+        xscale = 2,
+        yscale = 2,
     },
     maskKintsugiPatternStars = {
         absx = 0,
         absy = 0,
         rotation = 0,
-        xscale = 1,
-        yscale = 1,
+        xscale = 2,
+        yscale = 2,
     },
     chimeL = {
         x = -13,
@@ -336,7 +336,7 @@ self.sprites.maskKintsugi["activateAnimation"] = function()
     self.keyframes.maskKintsugi.alpha = 1
     self.sprites.maskKintsugi.alpha = 1
     self.sprites.maskKintsugi.loopmode = "ONESHOT"
-    self.sprites.maskKintsugi.SetAnimation(self.sprites.maskKintsugi["animationFrames"], .12)
+    self.sprites.maskKintsugi.SetAnimation(self.sprites.maskKintsugi["animationFrames"], .15)
 end
 self.sprites.maskKintsugi.alpha = 0
 
