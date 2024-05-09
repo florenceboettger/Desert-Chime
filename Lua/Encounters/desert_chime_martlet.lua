@@ -7,7 +7,7 @@ require "ScriptOwnerBypass"
 
 -- music = "shine_on_you_crazy_diamond" --Either OGG or WAV. Extension is added automatically. Uncomment for custom music.
 encountertext = "The sand swirls around you." --Modify as necessary. It will only be read out in the action select screen.
-nextwaves = {"martlet_blossoms"}
+nextwaves = {"martlet_corkgun"}
 wavetimerOrig = 4.0
 wavetimer = 8.0
 wavespeed = 1.0

@@ -19,10 +19,6 @@ function OnHit(bullet)
     PlayerHurt(9)
 end
 
-function Mix(x, y, a)
-    return x * (1 - a) + y * a
-end
-
 local function getNearestBullet()
     local minDist = 999999999
     local minBullet
