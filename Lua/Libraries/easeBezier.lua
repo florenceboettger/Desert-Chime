@@ -14,7 +14,7 @@ local argIdxNotInRangeError = 'Argument #%d should be between %d and %d!'
 --- @param x2 number (In [0, 1]) x coordinate of the second variable point
 --- @param y2 number y coordinate of the second variable point
 --- @param x number Point at which to sample
---- @param[opt=10] iterations number (Optional, defaults to 7) Number of Binary Search iterations
+--- @param[opt=7] iterations number (Optional, defaults to 7) Number of Binary Search iterations
 --- @return number vy
 function self.ease(x1, y1, x2, y2, x, iterations)
 	iterations = iterations or 7
