@@ -7,14 +7,16 @@ require "ScriptOwnerBypass"
 
 -- music = "shine_on_you_crazy_diamond" --Either OGG or WAV. Extension is added automatically. Uncomment for custom music.
 encountertext = "The sand swirls around you." --Modify as necessary. It will only be read out in the action select screen.
-nextwaves = {"martlet_corkgun"}
-wavetimerOrig = 4.0
+local waves = {"martlet_corkgun", "martlet_blossoms"}
+local wavetimers = {6.7, 8.0}
+local nextWave = waves[1]
+nextwaves = {nextWave}
 wavetimer = 8.0
+wavetimerOrig = wavetimer
 wavespeed = 1.0
 arenasize = {100, 100}
 
-local moveMonster = {150, -150}
-local moveArena = {-150, 0}
+local waveCounter = 0
 
 autolinebreak = true
 noscalerotationbug = true
@@ -87,7 +89,7 @@ function EncounterStarting()
         0.2
     )
     Player.sprite.color = {1, 1, 1}
-    Player.sprite.rotation = 90
+    Player.sprite.rotation = 180
     UI.background.Set("empty")
 
     tp = require "tp"
@@ -108,10 +110,31 @@ function Update()
     UI.hplabel.absx = 162
     UI.hpbar.background.absx = UI.hplabel.absx + UI.hplabel.width + LabelBarDiff
     UI.hptext.absx = UI.hpbar.background.absx + UI.hpbar.background.xscale + HPBarDiff
+
+    if GetCurrentState() == "PREWAVEMOVE" then
+        if nextWave == "martlet_blossoms" then
+            Player.sprite.rotation = math.max(90, Player.sprite.rotation - Time.dt * 270)
+        end
+    elseif GetCurrentState() == "POSTWAVEMOVE" then
+        if nextWave == "martlet_blossoms" then
+            Player.sprite.rotation = math.min(180, Player.sprite.rotation + Time.dt * 270)
+        end
+    end
 end
 
 function EnteringState(newstate, oldstate)
-    
+    if newstate == "DEFENDING" and oldstate ~= "PREWAVEMOVE" then
+        waveCounter = waveCounter + 1
+        nextWave = waves[math.min(#waves, waveCounter)]
+        wavetimer = wavetimers[math.min(#waves, waveCounter)]
+        if nextWave == "martlet_blossoms" then
+            
+        elseif nextWave == "martlet_corkgun" then
+
+        end
+
+        nextwaves = {nextWave}
+    end
 end
 
 function EnemyDialogueStarting()

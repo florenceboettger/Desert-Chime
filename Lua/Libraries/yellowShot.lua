@@ -61,7 +61,7 @@ function self.createShot()
     spr.localRotation = 0
     spr.MoveTo(0, 0)
     spr["xspeed"] = math.sin(spr.rotation / 180 * math.pi) * 300
-    spr["yspeed"] = math.cos(spr.rotation / 180 * math.pi) * 300
+    spr["yspeed"] = -math.cos(spr.rotation / 180 * math.pi) * 300
     spr["xacc"] = 10
     spr["yacc"] = -200
     spr["bigshot"] = false
@@ -89,7 +89,7 @@ function self.createBigShot()
     spr.alpha = 0.5
     spr.MoveTo(0, 0)
     spr["xspeed"] = math.sin(spr.rotation / 180 * math.pi) * 360
-    spr["yspeed"] = math.cos(spr.rotation / 180 * math.pi) * 360
+    spr["yspeed"] = -math.cos(spr.rotation / 180 * math.pi) * 360
     spr["xacc"] = 20
     spr["yacc"] = -100
     spr["bigshot"] = true
@@ -129,6 +129,8 @@ end
 PostYellowShotUpdate = Update
 
 function Update()
+    self.shootSprite.localRotation = 0
+    self.readySprite.localRotation = 0
     if GetCurrentState() == "DEFENDING" then
         if not self.lock then
             if Input.Confirm == 1 and Time.time - self.lastShot >= 5/30 then

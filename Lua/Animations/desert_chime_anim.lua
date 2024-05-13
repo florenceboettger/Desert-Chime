@@ -64,6 +64,12 @@ function self.elapsedTime()
     return (Time.time - self.startTime) * wavespeed
 end
 
+function self.setAlpha(a)
+    for _, v in pairs(self.keyframes) do
+        v.alpha = a
+    end
+end
+
 self.initialKeyframes = {
     body = {
         xscale = 2,

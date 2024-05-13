@@ -21,7 +21,7 @@ local function shuffle(tbl)
     return tbl
 end
 
-local shotDelay = 1
+local shotDelay = {0, 1, 2, 2.7, 3.4, 4, 4.5}
 local gunAppearTime = 0.3
 local shootStart = 0.7
 local shootDistance = 150
@@ -32,7 +32,7 @@ local deleteStart = 2.1
 local deleteTime = 0.3
 
 local guns = {}
-local gunSize = 7
+local gunSize = #shotDelay
 
 local startAngle = math.random() * 360
 local ids = {}
@@ -57,6 +57,7 @@ local function gunsUpdate()
         local marker = g["marker"]
         local bullet = g["bullet"]
         local stringSprite = g["stringSprite"]
+        local effect = g["effect"]
 
         local activeTime = WaveTime() - gunProxy["initialTime"]
 
@@ -82,6 +83,29 @@ local function gunsUpdate()
 
             stringSprite.xscale = shootDistance * factor
             stringSprite.SendToBottom()
+
+            if not effect then
+                effect = CreateSprite("gun_shot_0", "Top")
+                effect.SetAnimation(
+                    {
+                        "gun_shot_0",
+                        "gun_shot_1",
+                        "gun_shot_2",
+                        "gun_shot_3",
+                        "gun_shot_4",
+                        "gun_shot_5",
+                    }, 0.05
+                )
+                effect.loopmode = "ONESHOTEMPTY"
+                effect.SetPivot(1, 0.5)
+                effect.SetAnchor(0, 0)
+                effect.Scale(2, gunProxy.yscale)
+                effect.SetParent(g)
+                effect.MoveTo(0, 0)
+                effect.rotation = gunProxy.rotation
+                effect.SendToTop()
+                g["effect"] = effect
+            end
         end
 
         if activeTime > recallStart then
@@ -169,12 +193,11 @@ local function createGun(id)
     local cork = CreateSprite("cork", "Top")
     cork.SetPivot(5 / 7, 0.5)
     cork.SetAnchor(shotOffset.x / gunProxy.width, shotOffset.y / gunProxy.height)
-    cork.Scale(2, 2)
+    cork.Scale(2, gunProxy.yscale)
     cork.SetParent(gunProxy)
     cork.MoveTo(0, 0)
     cork.alpha = 0
     cork.rotation = gunProxy.rotation
-    cork.yscale = gunProxy.yscale
     cork.SendToBottom()
     gunParent["cork"] = cork
 
@@ -190,7 +213,7 @@ end
 
 function Update()
     gunsUpdate()
-    if WaveTime() >= shotDelay * #guns and #guns < gunSize then
+    if #guns < gunSize and WaveTime() >= shotDelay[#guns + 1] then
         createGun(#guns)
     end
 end
