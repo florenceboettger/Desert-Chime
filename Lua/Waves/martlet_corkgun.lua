@@ -13,6 +13,10 @@ local function sign(number)
     end
 end
 
+local function mix(x, y, a)
+    return x * (1 - a) + y * a
+end
+
 local function shuffle(tbl)
     for i = #tbl, 2, -1 do
         local j = math.random(i)
@@ -30,6 +34,10 @@ local recallStart = 1.3
 local recallTravelTime = 0.5
 local deleteStart = 2.1
 local deleteTime = 0.3
+
+local recoilDistance = 40
+local recoilTimeStart = 0.2
+local recoilTimeReturn = 0.4
 
 local guns = {}
 local gunSize = #shotDelay
@@ -63,10 +71,9 @@ local function gunsUpdate()
 
         local elapsed = math.min(1, activeTime / gunAppearTime)
         g.alpha = elapsed
-        gunProxy.alpha = g.alpha
         local factor = easeBezier.ease(.61, 1.18, .73, 1.00, activeTime / gunAppearTime)
         gunProxy.rotation = gunProxy["initialRotation"] - factor * gunRotation
-        gun.alpha = gunProxy.alpha
+        gun.alpha = g.alpha
         gun.rotation = gunProxy.rotation
         --cork.alpha = g.alpha
         bullet.sprite.alpha = g.alpha
@@ -106,11 +113,16 @@ local function gunsUpdate()
                 effect.SendToTop()
                 g["effect"] = effect
             end
+
+            local recoilFactor = easeBezier.ease(.35, 1.11, .75, 1.07, math.min(1, (activeTime - shootStart) / recoilTimeStart))
+            gun.SetAnchor(0.5 + factor * recoilDistance / (gunProxy.width * gunProxy.xscale), 0.5)
         end
 
         if activeTime > recallStart then
             factor = easeBezier.ease(.85, .17, .95, .83, math.min(1, (activeTime - recallStart) / recallTravelTime))
-            cork.SetAnchor(shootDistance * (factor - 1), 0)
+            --cork.SetAnchor(shootDistance * (factor - 1), 0)
+            cork.SetAnchor(mix(-shootDistance, recoilDistance, factor), 0)
+            cork.SendToBottom()
 
             stringSprite.xscale = shootDistance * (1 - factor)
         end
@@ -118,8 +130,8 @@ local function gunsUpdate()
         if activeTime > deleteStart then
             elapsed = math.min(1, (activeTime - deleteStart) / deleteTime)
             g.alpha = 1 - elapsed
-            gunProxy.alpha = g.alpha
             gun.alpha = g.alpha
+            cork.alpha = g.alpha
             bullet.sprite.alpha = g.alpha
         end
 
