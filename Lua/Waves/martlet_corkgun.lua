@@ -75,8 +75,7 @@ local function gunsUpdate()
         gunProxy.rotation = gunProxy["initialRotation"] - factor * gunRotation
         gun.alpha = g.alpha
         gun.rotation = gunProxy.rotation
-        --cork.alpha = g.alpha
-        bullet.sprite.alpha = g.alpha
+        cork.alpha = g.alpha
         cork.rotation = gunProxy.rotation
         marker.alpha = g.alpha * 0.4
 
@@ -132,7 +131,6 @@ local function gunsUpdate()
             g.alpha = 1 - elapsed
             gun.alpha = g.alpha
             cork.alpha = g.alpha
-            bullet.sprite.alpha = g.alpha
         end
 
         bullet.MoveToAbs(cork.absx, cork.absy)
