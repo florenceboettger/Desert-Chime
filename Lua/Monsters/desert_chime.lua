@@ -2,6 +2,7 @@
 comments = {"..."}
 commands = {}
 randomdialogue = {"[effect:rotate,15," .. -math.pi/2 .. "][charspacing:0]Ddd\nuuu\naaa\nlll\n"}
+randomdialogue = {"[effect:rotate,0]Ddd\nuuu\naaa\nlll\n"}
 
 sprite = "desert_chime_jar" --Always PNG. Extension is added automatically.
 name = "Desert Chime"

@@ -120,6 +120,22 @@ function Update()
             Player.sprite.rotation = math.min(180, Player.sprite.rotation + Time.dt * 270)
         end
     end
+
+    if enemies[1]["textobject"] then
+        local text = enemies[1]["textobject"]
+        local letters = text.GetLetters()
+        local lastPos = {x = nil, y = nil}
+        for _, l in ipairs(letters) do
+            l.rotation = -45
+            if lastPos.y and math.abs(l.y - lastPos.y) < 0.1 then
+                local letterDist = l.x - lastPos.x
+                l.MoveTo(lastPos.x + letterDist * math.sin(math.pi/4),
+                    lastPos.y - letterDist * math.cos(math.pi/4)
+                )
+            end
+            lastPos = {x = l.x, y = l.y}
+        end
+    end
 end
 
 function EnteringState(newstate, oldstate)
@@ -159,10 +175,18 @@ function HandleItem(ItemID)
 end
 
 function OnTextDisplay(text)
-    if text == enemies[1]["textobject"] then
-        local letters = text.GetLetters()
-        for _, l in ipairs(letters) do
-            l.rotation = -45
-        end
-    end
+    --if text == enemies[1]["textobject"] then
+    --    local letters = text.GetLetters()
+    --    local lastPos = {x = nil, y = nil}
+    --    for _, l in ipairs(letters) do
+    --        l.rotation = -45
+    --        if lastPos.y and math.abs(l.y - lastPos.y) < 0.1 then
+    --            local letterDist = l.x - lastPos.x
+    --            l.x = lastPos.x + letterDist * math.sin(math.pi/4)
+    --            l.y = lastPos.y - letterDist * math.cos(math.pi/4)
+    --            l.Move(100, 100)
+    --        end
+    --        lastPos = {x = l.x, y = l.y}
+    --    end
+    --end
 end
