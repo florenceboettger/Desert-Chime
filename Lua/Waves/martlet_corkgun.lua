@@ -37,7 +37,6 @@ local deleteTime = 0.3
 
 local recoilDistance = 40
 local recoilTimeStart = 0.2
-local recoilTimeReturn = 0.4
 
 local guns = {}
 local gunSize = #shotDelay
@@ -87,9 +86,6 @@ local function gunsUpdate()
             cork.SetAnchor(-shootDistance * factor, 0)
             marker.alpha = 0
 
-            stringSprite.xscale = shootDistance * factor
-            stringSprite.SendToBottom()
-
             if not effect then
                 effect = CreateSprite("gun_shot_0", "Top")
                 effect.SetAnimation(
@@ -114,7 +110,11 @@ local function gunsUpdate()
             end
 
             local recoilFactor = easeBezier.ease(.35, 1.11, .75, 1.07, math.min(1, (activeTime - shootStart) / recoilTimeStart))
-            gun.SetAnchor(0.5 + factor * recoilDistance / (gunProxy.width * gunProxy.xscale), 0.5)
+            gun.SetAnchor(0.5 + factor * recoilDistance / (gunProxy.width * gunProxy.xscale), 0.5)            
+
+            stringSprite.xscale = shootDistance * factor + recoilDistance * factor
+            stringSprite.SetAnchor(recoilDistance * factor, 0)
+            stringSprite.SendToBottom()
         end
 
         if activeTime > recallStart then
@@ -123,7 +123,7 @@ local function gunsUpdate()
             cork.SetAnchor(mix(-shootDistance, recoilDistance, factor), 0)
             cork.SendToBottom()
 
-            stringSprite.xscale = shootDistance * (1 - factor)
+            stringSprite.xscale = mix(shootDistance + recoilDistance, 0, factor)
         end
 
         if activeTime > deleteStart then

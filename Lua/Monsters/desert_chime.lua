@@ -1,7 +1,7 @@
 -- A basic monster script skeleton you can copy and modify for your own creations.
 comments = {"..."}
 commands = {}
-randomdialogue = {"..."}
+randomdialogue = {"[effect:rotate,15," .. -math.pi/2 .. "][charspacing:0]Ddd\nuuu\naaa\nlll\n"}
 
 sprite = "desert_chime_jar" --Always PNG. Extension is added automatically.
 name = "Desert Chime"

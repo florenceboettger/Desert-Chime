@@ -157,3 +157,12 @@ end
 function HandleItem(ItemID)
     BattleDialog({"Selected item " .. ItemID .. "."})
 end
+
+function OnTextDisplay(text)
+    if text == enemies[1]["textobject"] then
+        local letters = text.GetLetters()
+        for _, l in ipairs(letters) do
+            l.rotation = -45
+        end
+    end
+end
