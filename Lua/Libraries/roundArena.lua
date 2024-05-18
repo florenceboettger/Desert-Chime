@@ -2,6 +2,7 @@ local self = {}
 
 CreateState("PREWAVEMOVE")
 CreateState("POSTWAVEMOVE")
+CreateState("DIALOGUETOACTIONSELECT")
 
 self.active = true
 self.circleArena = true
@@ -35,6 +36,8 @@ local arenaCurves = {}
 local innerCurves = {}
 local circleBezierConstant = 0.265216 -- 4/3 * tan(pi/16)
 local sqrtPointFive = math.sqrt(2)/2
+
+local nextState
 
 local function arenaCenter()
     return {
@@ -164,8 +167,10 @@ function Update()
             )
         else
             self.monsterSprite.MoveTo(startMonster.x, startMonster.y)
-            State("ACTIONSELECT")
+            State(nextState)
         end
+    elseif GetCurrentState() == "DIALOGUETOACTIONSELECT" then
+        State("ACTIONSELECT")
     end
 
     if PostRoundArenaUpdate then
@@ -175,7 +180,23 @@ end
 
 PostRoundArenaEnteringState = EnteringState
 
+local changedState = false
+
+_State = State
+
+function State(state)
+    _State(state)
+    changedState = true
+end
+
 function EnteringState(newstate, oldstate)
+    changedState = false
+    if PostRoundArenaEnteringState then
+        PostRoundArenaEnteringState(newstate, oldstate)
+    end
+    if changedState then
+        return
+    end
     if oldstate ~= "PREWAVEMOVE" and newstate == "DEFENDING" and self.active then
         startMoveTime = Time.time
         startArenaPos = {x = Arena.x, y = Arena.y}
@@ -200,7 +221,7 @@ function EnteringState(newstate, oldstate)
 
         State("PREWAVEMOVE")
     end
-    if oldstate == "DEFENDING" and self.active then
+    if (oldstate == "DEFENDING" or oldstate == "ENEMYDIALOGUE" or oldstate == "DIALOGUETOACTIONSELECT") and newstate == "ACTIONSELECT" and self.active then
         startMoveTime = Time.time
         Player.sprite.MoveTo(-100, -100)
         if self.circleArena then
@@ -208,11 +229,8 @@ function EnteringState(newstate, oldstate)
             outerArenaCircleSprite.alpha = 0
             Arena.Show()
         end
+        nextState = newstate
         State("POSTWAVEMOVE")
-    end
-
-    if PostRoundArenaEnteringState then
-        PostRoundArenaEnteringState(newstate, oldstate)
     end
 end
 

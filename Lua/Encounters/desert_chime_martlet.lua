@@ -7,8 +7,11 @@ require "ScriptOwnerBypass"
 
 -- music = "shine_on_you_crazy_diamond" --Either OGG or WAV. Extension is added automatically. Uncomment for custom music.
 encountertext = "The sand swirls around you." --Modify as necessary. It will only be read out in the action select screen.
-local waves = {"martlet_corkgun", "martlet_blossoms"}
-local wavetimers = {6.7, 8.0}
+local waves = {"martlet_blossoms", "martlet_corkgun", "martlet_kintsugi"}
+local wavetimers = {
+    martlet_blossoms = 8.0,
+    martlet_corkgun = 6.7,
+    martlet_kintsugi = 100000}
 local nextWave = waves[1]
 nextwaves = {nextWave}
 wavetimer = 8.0
@@ -55,7 +58,6 @@ LabelBarDiff = 0
 HPBarDiff = 0
 
 function EncounterStarting()
-
     LabelBarDiff = UI.hpbar.background.absx - (UI.hplabel.absx + UI.hplabel.width)
     HPBarDiff = UI.hptext.absx - (UI.hpbar.background.absx + UI.hpbar.background.xscale)
     DesertChimeAnimation = require "Animations/desert_chime_anim"
@@ -106,50 +108,112 @@ function EncounterStarting()
     --Sandstorm.Hide()
 end
 
+local letterPositions = {}
+local letterRadius = 15
+
+function OnTextDisplay(text)
+    if text == enemies[1]["textobject"] then
+        local bubbleSprite = enemies[1]["bubblesprite"]
+        local textObject = enemies[1]["textobject"]
+        bubbleSprite.SetPivot(0, 1 + 58 / bubbleSprite.height)
+        local letters = text.GetLetters()
+        local lastPos = {x = nil, y = nil, originalY = nil}
+        for i, l in ipairs(letters) do
+            if i > 1 then
+                l.rotation = -45
+                l.Scale(1.2, 1.2)
+                --l.y = l.y + 10
+                local originalY = l.y
+                local originalX = l.x
+                if lastPos.originalY and math.abs(l.y - lastPos.originalY) < 0.1 then
+                    local letterDist = (l.x - lastPos.x) * 0.2
+                    l.MoveTo(
+                        lastPos.x + letterDist * math.sin(math.pi/4),
+                        lastPos.y - letterDist * math.cos(math.pi/4)
+                    )
+                    l.Scale(0.8, 0.8)
+                else
+                    l.Move(0, -58)
+                end
+                letterPositions[i] = {x = l.x + 10, y = l.y, start = originalY / 200 - originalX / 100}
+                lastPos = {x = l.x, y = l.y, originalY = originalY}
+            end
+        end
+    end
+end
+
 function Update()
     UI.hplabel.absx = 162
     UI.hpbar.background.absx = UI.hplabel.absx + UI.hplabel.width + LabelBarDiff
     UI.hptext.absx = UI.hpbar.background.absx + UI.hpbar.background.xscale + HPBarDiff
 
     if GetCurrentState() == "PREWAVEMOVE" then
-        if nextWave == "martlet_blossoms" then
+        if nextWave == "martlet_blossoms" or nextWave == "martlet_kintsugi" then
             Player.sprite.rotation = math.max(90, Player.sprite.rotation - Time.dt * 270)
         end
     elseif GetCurrentState() == "POSTWAVEMOVE" then
-        if nextWave == "martlet_blossoms" then
+        if nextWave == "martlet_blossoms" or nextWave == "martlet_kintsugi" then
             Player.sprite.rotation = math.min(180, Player.sprite.rotation + Time.dt * 270)
         end
     end
 
     if enemies[1]["textobject"] then
         local text = enemies[1]["textobject"]
+        local bubbleSprite = enemies[1]["bubblesprite"]
+        bubbleSprite.Set("SpeechBubbles/rightlongoffset")
         local letters = text.GetLetters()
-        local lastPos = {x = nil, y = nil}
-        for _, l in ipairs(letters) do
-            l.rotation = -45
-            if lastPos.y and math.abs(l.y - lastPos.y) < 0.1 then
-                local letterDist = l.x - lastPos.x
-                l.MoveTo(lastPos.x + letterDist * math.sin(math.pi/4),
-                    lastPos.y - letterDist * math.cos(math.pi/4)
+        for i, l in ipairs(letters) do
+            if i > 1 then
+                local rotateProgress = (letterPositions[i].start + Time.time / 1.5) % 1
+                local easeValue = {x = .52, y = .34}
+                rotateProgress = easeBezier.ease(easeValue.x, easeValue.y, 1 - easeValue.x, 1 - easeValue.y, rotateProgress)
+                l.MoveTo(
+                    letterPositions[i].x + letterRadius * math.sin(2 * math.pi * rotateProgress),
+                    letterPositions[i].y - letterRadius * math.cos(2 * math.pi * rotateProgress)
+                )
+                math.randomseed(i + math.floor(Time.time * 5))
+                local randomJitter = math.random()
+                randomJitter = easeBezier.ease(.41, .71, .77, .89, randomJitter) * 10
+                local randomAngle = 2 * math.pi * math.random()
+                l.Move(
+                    randomJitter * math.sin(randomAngle),
+                    randomJitter * math.cos(randomAngle)
                 )
             end
-            lastPos = {x = l.x, y = l.y}
         end
     end
 end
 
+local lastState
+local textPrefix = "[effect:rotate,0.000001][charspacing:-2][alpha:00]I[charspacing:4][linespacing:6][alpha:ff]"
+
 function EnteringState(newstate, oldstate)
-    if newstate == "DEFENDING" and oldstate ~= "PREWAVEMOVE" then
-        waveCounter = waveCounter + 1
-        nextWave = waves[math.min(#waves, waveCounter)]
-        wavetimer = wavetimers[math.min(#waves, waveCounter)]
-        if nextWave == "martlet_blossoms" then
-            
-        elseif nextWave == "martlet_corkgun" then
+    if newstate == "ENEMYDIALOGUE" and oldstate ~= "ENEMYDIALOGUE" then
+        encountertext = "..."
+        lastState = oldstate
+        if oldstate == "DEFENDING" then
+            enemies[1]["currentdialogue"] = {textPrefix .. "Fff\nrrr\ni\ne\nnnn\nddd\nssssss\n..!"}
+            encountertext = "A connection reveals itself."
+        else
+            waveCounter = waveCounter + 1
+            nextWave = waves[math.min(#waves, waveCounter)]
+            wavetimer = wavetimers[nextWave]
+            if nextWave == "martlet_blossoms" then
+                enemies[1]["currentdialogue"] = {textPrefix .. "A\nlll\no\nnnn\ne\n..."}
+            elseif nextWave == "martlet_corkgun" then
+                enemies[1]["currentdialogue"] = {textPrefix .. "Ddd\nu\na\nlll\n..."}
+            elseif nextWave == "martlet_kintsugi" then
+                enemies[1]["currentdialogue"] = {textPrefix .. "...\n...\n...\n...\n...\n..?"}           
+                RoundArena.arenaOffset = {x = -200, y = 100}
+                RoundArena.monsterOffset = {x = 140, y = -120}
+            end
 
+            nextwaves = {nextWave}
         end
-
-        nextwaves = {nextWave}
+    end
+    if newstate == "DEFENDING" and lastState == "DEFENDING" then
+        lastState = nil
+        State("DIALOGUETOACTIONSELECT")
     end
 end
 
@@ -163,7 +227,6 @@ function EnemyDialogueEnding()
 end
 
 function DefenseEnding() --This built-in function fires after the defense round ends.
-    encountertext = RandomEncounterText() --This built-in function gets a random encounter text from a random enemy.
 end
 
 function HandleSpare()
@@ -172,21 +235,4 @@ end
 
 function HandleItem(ItemID)
     BattleDialog({"Selected item " .. ItemID .. "."})
-end
-
-function OnTextDisplay(text)
-    --if text == enemies[1]["textobject"] then
-    --    local letters = text.GetLetters()
-    --    local lastPos = {x = nil, y = nil}
-    --    for _, l in ipairs(letters) do
-    --        l.rotation = -45
-    --        if lastPos.y and math.abs(l.y - lastPos.y) < 0.1 then
-    --            local letterDist = l.x - lastPos.x
-    --            l.x = lastPos.x + letterDist * math.sin(math.pi/4)
-    --            l.y = lastPos.y - letterDist * math.cos(math.pi/4)
-    --            l.Move(100, 100)
-    --        end
-    --        lastPos = {x = l.x, y = l.y}
-    --    end
-    --end
 end

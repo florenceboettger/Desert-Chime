@@ -1,18 +1,6 @@
 require "waveBegin"
 local easeBezier = require "easeBezier"
 
-local yellowShot = Encounter["YellowShot"]
-
-local function sign(number)
-    if number > 0 then
-       return 1
-    elseif number < 0 then
-       return -1
-    else
-       return 0
-    end
-end
-
 local function mix(x, y, a)
     return x * (1 - a) + y * a
 end

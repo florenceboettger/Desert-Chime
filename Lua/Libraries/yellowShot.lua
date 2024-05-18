@@ -100,9 +100,8 @@ function self.createBigShot()
 end
 
 function self.onCollision(enemybullet, shot)
-    if shot["bigshot"] then
-        
-    else
+    local destroyShot = onHit(enemybullet, shot)
+    if destroyShot then
         local hitSprite = CreateSprite("spr_yheart_shot_hit_0")
         hitSprite.SetAnimation({
             "spr_yheart_shot_hit_0",
@@ -122,7 +121,6 @@ function self.onCollision(enemybullet, shot)
         table.insert(self.hitSprites, hitSprite)
 
         shot.Remove()
-        onHit(enemybullet)
     end
 end
 

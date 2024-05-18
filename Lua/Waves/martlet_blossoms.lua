@@ -3,6 +3,7 @@ require "waveBegin"
 local yellowShot = Encounter["YellowShot"]
 
 local barrages = {{}}
+local destroyAnims = {}
 
 local shotDelay = 0.8
 local spawnDelay = 0.07
@@ -75,7 +76,31 @@ local function updateBullets()
     for i, barrage in ipairs(barrages) do
         for j, bullet in ipairs(barrage) do
             if bullet.isactive then
-                bullet.Move(bullet["xspeed"] * WaveDeltaTime(), bullet["yspeed"] * WaveDeltaTime())
+                if bullet["hit"] then
+                    local destroyAnim = CreateSprite("desert_chime_blossom_destroy_0")
+                    local frames = {}
+                    for k = 0, 8 do
+                        table.insert(frames, "desert_chime_blossom_destroy_" .. k)
+                    end
+                    destroyAnim.loopmode = "ONESHOTEMPTY"
+                    destroyAnim.SetAnimation(frames, 0.05)
+                    destroyAnim.MoveToAbs(bullet.absx, bullet.absy)
+                    table.insert(destroyAnims, destroyAnim)
+                    bullet.Remove()
+                else
+                    bullet.Move(bullet["xspeed"] * WaveDeltaTime(), bullet["yspeed"] * WaveDeltaTime())
+                end
+            end
+        end
+    end
+
+    for _, destroyAnim in ipairs(destroyAnims) do
+        if destroyAnim.isactive then
+            if destroyAnim.currentframe > 3 then
+                destroyAnim.alpha = destroyAnim.alpha - WaveDeltaTime() / 0.4
+                if destroyAnim.alpha < 0 then
+                    destroyAnim.Remove()
+                end
             end
         end
     end
@@ -158,6 +183,12 @@ function Update()
         end
 
         table.insert(barrages, {})
+    end
+end
+
+function EndingWave()
+    for _, destroyAnim in ipairs(destroyAnims) do
+        destroyAnim.Remove()
     end
 end
 

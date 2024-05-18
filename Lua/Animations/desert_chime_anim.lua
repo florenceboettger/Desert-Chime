@@ -893,6 +893,8 @@ function self.updateSplines()
 end
 
 self.preChimeUpdate = Update
+self.activateKintsugi = false
+self.kintsugiActivated = false
 
 function Update()
     if self.preChimeUpdate then
@@ -903,7 +905,8 @@ function Update()
         self.applyKeyframes()
         self.updateSplines()
 
-        if Input.GetKey("Mouse1") == 1 then
+        if self.activateKintsugi and not self.kintsugiActivated then
+            self.kintsugiActivated = true
             self.sprites.maskKintsugi["activateAnimation"]()
         end
     end
